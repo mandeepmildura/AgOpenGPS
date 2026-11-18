@@ -434,7 +434,7 @@ namespace AgOpenGPS
 
         public void LoadSettings()
         {
-            btnChangeMappingColor.Text = Program.Version;
+            btnChangeMappingColor.Text = Application.ProductVersion;
 
             //metric settings
             isMetric = Settings.Default.setMenu_isMetric;
@@ -588,7 +588,7 @@ namespace AgOpenGPS
             else btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
 
             //btnChangeMappingColor.BackColor = sectionColorDay;
-            btnChangeMappingColor.Text = Program.Version;
+            btnChangeMappingColor.Text = Application.ProductVersion;
 
             if (Properties.Settings.Default.setDisplay_isStartFullScreen)
             {

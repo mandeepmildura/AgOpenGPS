@@ -282,7 +282,7 @@ namespace AgIO
             }
 
             this.Text =
-            "AgIO  v" + Program.Version + " Profile: " + RegistrySettings.profileName;
+            "AgIO  v" + Application.ProductVersion + " Profile: " + RegistrySettings.profileName;
 
             if (RegistrySettings.profileName == "")
             {
@@ -300,7 +300,7 @@ namespace AgIO
                         Program.Restart();
                     }
                 }
-                this.Text = "AgIO  v" + Program.Version + " Profile: "
+                this.Text = "AgIO  v" + Application.ProductVersion + " Profile: "
                     + RegistrySettings.profileName;
             }
 

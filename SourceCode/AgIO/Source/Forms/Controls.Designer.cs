@@ -332,7 +332,7 @@ namespace AgIO
                     Program.Restart();
                 }
             }
-            this.Text = "AgIO  v" + Program.Version + "   Using Profile: "
+            this.Text = "AgIO  v" + Application.ProductVersion + "   Using Profile: "
                 + RegistrySettings.profileName;
         }
 
