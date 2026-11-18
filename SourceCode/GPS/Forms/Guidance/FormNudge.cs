@@ -25,16 +25,10 @@ namespace AgOpenGPS
 
         private void FormEditTrack_Load(object sender, EventArgs e)
         {
-            if (mf.isMetric)
-            {
-                nudSnapDistance.DecimalPlaces = 0;
-                nudSnapDistance.Value = (int)((double)Properties.ToolSettings.Default.setAS_snapDistance);
-            }
-            else
-            {
-                nudSnapDistance.DecimalPlaces = 1;
-                nudSnapDistance.Value = (decimal)Math.Round(((double)Properties.ToolSettings.Default.setAS_snapDistance * mf.cm2CmOrIn), 1);
-            }
+            //sandy: metric shows mm (cm2CmOrIn = 10), whole mm; imperial 0.1 in
+            nudSnapDistance.DecimalPlaces = mf.isMetric ? 0 : 1;
+            nudSnapDistance.Maximum = mf.isMetric ? 10000 : 1000;
+            nudSnapDistance.Value = glm.ToNud(Properties.ToolSettings.Default.setAS_snapDistance, mf.cm2CmOrIn, nudSnapDistance.DecimalPlaces);
 
             snapAdj = Properties.ToolSettings.Default.setAS_snapDistance * 0.01;
 
@@ -65,11 +59,11 @@ namespace AgOpenGPS
             if (mf.trk.idx > -1)
             {
                 if (mf.trk.gArr[mf.trk.idx].nudgeDistance == 0)
-                    lblOffset.Text = ((int)(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString() + mf.unitsInCm;
+                    lblOffset.Text = ((int)Math.Round(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString() + mf.unitsInCm;
                 else if (mf.trk.gArr[mf.trk.idx].nudgeDistance < 0)
-                    lblOffset.Text = "< " + ((int)(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString() + mf.unitsInCm;
+                    lblOffset.Text = "< " + ((int)Math.Round(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString() + mf.unitsInCm;
                 else
-                    lblOffset.Text = ((int)(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm)).ToString() + " >" + mf.unitsInCm;
+                    lblOffset.Text = ((int)Math.Round(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm)).ToString() + " >" + mf.unitsInCm;
             }
         }
 
@@ -120,9 +114,9 @@ namespace AgOpenGPS
             if (mf.trk.idx > -1 && mf.trk.gArr.Count > 0)
             {
                 if (mf.trk.gArr[mf.trk.idx].nudgeDistance < 0)
-                    lblOffset.Text = "< " + ((int)(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString();
+                    lblOffset.Text = "< " + ((int)Math.Round(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm * -1)).ToString();
                 else
-                    lblOffset.Text = ((int)(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm)).ToString() + " >";
+                    lblOffset.Text = ((int)Math.Round(mf.trk.gArr[mf.trk.idx].nudgeDistance * mf.m2InchOrCm)).ToString() + " >";
             }
         }
 

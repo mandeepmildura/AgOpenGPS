@@ -473,18 +473,20 @@ namespace AgOpenGPS
 
             if (isMetric)
             {
-                inchOrCm2m = 0.01;
-                m2InchOrCm = 100.0;
+                //sandy: metric small unit is mm (was cm): offsets, dimensions and nudge in 1 mm steps
+                inchOrCm2m = 0.001;
+                m2InchOrCm = 1000.0;
 
                 m2FtOrM = 1.0;
                 ftOrMtoM = 1.0;
 
-                inOrCm2Cm = 1.0;
-                cm2CmOrIn = 1.0;
+                //snap distance is stored in cm, shown in mm
+                inOrCm2Cm = 0.1;
+                cm2CmOrIn = 10.0;
 
                 unitsFtM = " m";
-                unitsInCm = " cm";
-                unitsInCmNS = "cm";
+                unitsInCm = " mm";
+                unitsInCmNS = "mm";
             }
             else
             {

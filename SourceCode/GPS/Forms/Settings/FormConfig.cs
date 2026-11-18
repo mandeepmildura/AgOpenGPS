@@ -107,6 +107,17 @@ namespace AgOpenGPS
 
             //metric or imp on spinners min/maxes
             if (!mf.isMetric) FixMinMaxSpinners();
+            else
+            {
+                //sandy: cm -> mm in metric, metres to 1 mm
+                NudlessNumericUpDownExtensions.CmLimitsToMm(nudAntennaHeight, nudAntennaOffset, nudAntennaPivot,
+                    nudTractorHitchLength, nudVehicleTrack, nudWheelbase, nudTrailingHitchLength, nudDrawbarLength,
+                    nudTankHitch, nudOverlap, nudOffset, nudTrailingToolToPivotLength, nudDefaultSectionWidth, nudTramWidth,
+                    nudSection01, nudSection02, nudSection03, nudSection04, nudSection05, nudSection06, nudSection07, nudSection08,
+                    nudSection09, nudSection10, nudSection11, nudSection12, nudSection13, nudSection14, nudSection15, nudSection16);
+                nudYouTurnRadius.DecimalPlaces = 3;
+                nudTurnDistanceFromBoundary.DecimalPlaces = 3;
+            }
 
             //tabTSections_Enter(this, e);
             lblVehicleToolWidth.Text = Convert.ToString((int)(mf.tool.width * 100 * mf.cm2CmOrIn));

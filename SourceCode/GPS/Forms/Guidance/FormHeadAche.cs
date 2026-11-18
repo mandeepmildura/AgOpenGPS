@@ -43,6 +43,7 @@ namespace AgOpenGPS
 
         private void FormHeadLine_Load(object sender, EventArgs e)
         {
+            if (mf.isMetric) nudSetDistance.DecimalPlaces = 3; //sandy: metres to 1 mm
             this.Text = "1: Set distance, 2: Tap Build, 3: Create Clip Lines";
 
             mf.hdl.idx = -1;

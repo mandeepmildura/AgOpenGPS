@@ -27,16 +27,10 @@ namespace AgOpenGPS
 
         private void FormEditTrack_Load(object sender, EventArgs e)
         {
-            if (mf.isMetric)
-            {
-                nudSnapDistance.DecimalPlaces = 0;
-                nudSnapDistance.Value = (int)((double)Properties.ToolSettings.Default.setAS_snapDistanceRef);
-            }
-            else
-            {
-                nudSnapDistance.DecimalPlaces = 1;
-                nudSnapDistance.Value = (decimal)Math.Round(((double)Properties.ToolSettings.Default.setAS_snapDistanceRef * mf.cm2CmOrIn), 1);
-            }
+            //sandy: metric shows mm (cm2CmOrIn = 10), whole mm; imperial 0.1 in
+            nudSnapDistance.DecimalPlaces = mf.isMetric ? 0 : 1;
+            nudSnapDistance.Maximum = mf.isMetric ? 10000 : 1000;
+            nudSnapDistance.Value = glm.ToNud(Properties.ToolSettings.Default.setAS_snapDistanceRef, mf.cm2CmOrIn, nudSnapDistance.DecimalPlaces);
 
             snapAdj = Properties.ToolSettings.Default.setAS_snapDistanceRef * 0.01;
 
@@ -45,7 +39,7 @@ namespace AgOpenGPS
                 gTemp.Add(new CTrk(item));
             }
 
-            lblOffset.Text = ((int)(distanceMoved * mf.m2InchOrCm)).ToString() + " " + mf.unitsInCm;
+            lblOffset.Text = ((int)Math.Round(distanceMoved * mf.m2InchOrCm)).ToString() + " " + mf.unitsInCm;
 
             //Location = Properties.Settings.Default.setWindow_formNudgeLocation;
             //Size = Properties.Settings.Default.setWindow_formNudgeSize;
@@ -105,7 +99,7 @@ namespace AgOpenGPS
 
         private void DistanceMovedLabel()
         {
-            lblOffset.Text = ((int)(distanceMoved * mf.m2InchOrCm)).ToString() + " " + mf.unitsInCm;
+            lblOffset.Text = ((int)Math.Round(distanceMoved * mf.m2InchOrCm)).ToString() + " " + mf.unitsInCm;
             mf.Focus();
         }
 

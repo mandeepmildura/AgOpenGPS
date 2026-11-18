@@ -743,16 +743,10 @@ namespace AgOpenGPS
             if (chkDisplayLightbar.Checked) { chkDisplayLightbar.Image = Resources.SwitchOn; }
             else { chkDisplayLightbar.Image = Resources.SwitchOff; }
 
-            if (mf.isMetric)
-            {
-                nudSnapDistance.DecimalPlaces = 0;
-                nudSnapDistance.Value = (int)((double)Properties.ToolSettings.Default.setAS_snapDistance * mf.cm2CmOrIn);
-            }
-            else
-            {
-                nudSnapDistance.DecimalPlaces = 1;
-                nudSnapDistance.Value = (decimal)Math.Round(((double)Properties.ToolSettings.Default.setAS_snapDistance * mf.cm2CmOrIn), 1, MidpointRounding.AwayFromZero);
-            }
+            //sandy: metric shows mm (cm2CmOrIn = 10), whole mm; imperial 0.1 in
+            nudSnapDistance.DecimalPlaces = mf.isMetric ? 0 : 1;
+            nudSnapDistance.Maximum = mf.isMetric ? 10000 : 1000;
+            nudSnapDistance.Value = glm.ToNud(Properties.ToolSettings.Default.setAS_snapDistance, mf.cm2CmOrIn, nudSnapDistance.DecimalPlaces);
 
             nudGuidanceLookAhead.Value = (decimal)Properties.Settings.Default.setAS_guidanceLookAheadTime;
 

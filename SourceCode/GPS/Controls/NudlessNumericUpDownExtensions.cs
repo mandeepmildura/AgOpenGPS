@@ -6,6 +6,18 @@ namespace AgOpenGPS.Controls
 {
     public static class NudlessNumericUpDownExtensions
     {
+        /// <summary>
+        /// sandy: metric boxes show mm now. Designer limits are in cm, so scale them x10 once per form.
+        /// </summary>
+        public static void CmLimitsToMm(params NudlessNumericUpDown[] nuds)
+        {
+            foreach (var nud in nuds)
+            {
+                nud.Maximum *= 10;
+                nud.Minimum *= 10;
+            }
+        }
+
         public static bool ShowKeypad(this NudlessNumericUpDown nudlessNumericUpDown, Form owner)
         {
             var color = nudlessNumericUpDown.BackColor;

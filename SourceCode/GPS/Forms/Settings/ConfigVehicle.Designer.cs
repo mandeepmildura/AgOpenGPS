@@ -75,12 +75,12 @@ namespace AgOpenGPS
         #region Antenna Enter/Leave
         private void tabVAntenna_Enter(object sender, EventArgs e)
         {
-            nudAntennaHeight.Value = (int)(Properties.VehicleSettings.Default.setVehicle_antennaHeight * mf.m2InchOrCm);
+            nudAntennaHeight.Value = glm.ToNud(Properties.VehicleSettings.Default.setVehicle_antennaHeight, mf.m2InchOrCm, nudAntennaHeight.DecimalPlaces);
 
-            nudAntennaPivot.Value = (int)((Properties.VehicleSettings.Default.setVehicle_antennaPivot) * mf.m2InchOrCm);
+            nudAntennaPivot.Value = glm.ToNud((Properties.VehicleSettings.Default.setVehicle_antennaPivot), mf.m2InchOrCm, nudAntennaPivot.DecimalPlaces);
 
             //negative is to the right
-            nudAntennaOffset.Value = (int)(Math.Abs(Properties.VehicleSettings.Default.setVehicle_antennaOffset) * mf.m2InchOrCm);
+            nudAntennaOffset.Value = glm.ToNud(Math.Abs(Properties.VehicleSettings.Default.setVehicle_antennaOffset), mf.m2InchOrCm, nudAntennaOffset.DecimalPlaces);
 
             rbtnAntennaLeft.Checked = false;
             rbtnAntennaRight.Checked = false;
@@ -178,11 +178,11 @@ namespace AgOpenGPS
 
         private void tabVDimensions_Enter(object sender, EventArgs e)
         {
-            nudWheelbase.Value = (int)(Math.Abs(Properties.VehicleSettings.Default.setVehicle_wheelbase) * mf.m2InchOrCm);
+            nudWheelbase.Value = glm.ToNud(Math.Abs(Properties.VehicleSettings.Default.setVehicle_wheelbase), mf.m2InchOrCm, nudWheelbase.DecimalPlaces);
 
-            nudVehicleTrack.Value = (int)(Math.Abs(Properties.VehicleSettings.Default.setVehicle_trackWidth) * mf.m2InchOrCm);
+            nudVehicleTrack.Value = glm.ToNud(Math.Abs(Properties.VehicleSettings.Default.setVehicle_trackWidth), mf.m2InchOrCm, nudVehicleTrack.DecimalPlaces);
 
-            nudTractorHitchLength.Value = (int)(Math.Abs(Properties.ToolSettings.Default.setVehicle_hitchLength) * mf.m2InchOrCm);
+            nudTractorHitchLength.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_hitchLength), mf.m2InchOrCm, nudTractorHitchLength.DecimalPlaces);
 
             if (mf.vehicle.VehicleConfig.Type == VehicleType.Tractor)
             {

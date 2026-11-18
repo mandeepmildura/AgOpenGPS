@@ -33,6 +33,10 @@ namespace AgOpenGPS
             nudVehicleTrack.Controls[0].Enabled = false;
             nudWheelbase.Controls[0].Enabled = false;
 
+            //sandy: metric boxes are mm
+            if (mf.isMetric) NudlessNumericUpDownExtensions.CmLimitsToMm(nudAntennaHeight, nudAntennaOffset,
+                nudAntennaPivot, nudVehicleTrack, nudWheelbase);
+
             this.label3.Text = gStr.gsAgressiveness;
             this.label5.Text = gStr.gsOvershootReduction;
             this.Text = gStr.gsAutoSteerConfiguration;
@@ -95,11 +99,11 @@ namespace AgOpenGPS
             hsbarLookAheadMult.Value = (Int16)(mf.vehicle.goalPointLookAheadMult * 10);
             lblLookAheadMult.Text = mf.vehicle.goalPointLookAheadMult.ToString();
 
-            nudAntennaPivot.Value = (int)((Properties.VehicleSettings.Default.setVehicle_antennaPivot) * mf.m2InchOrCm);
-            nudAntennaHeight.Value = (int)(Properties.VehicleSettings.Default.setVehicle_antennaHeight * mf.m2InchOrCm);
-            nudAntennaOffset.Value = (int)(Properties.VehicleSettings.Default.setVehicle_antennaOffset * mf.m2InchOrCm);
-            nudWheelbase.Value = (int)(Math.Abs(Properties.VehicleSettings.Default.setVehicle_wheelbase) * mf.m2InchOrCm);
-            nudVehicleTrack.Value = (int)(Math.Abs(Properties.VehicleSettings.Default.setVehicle_trackWidth) * mf.m2InchOrCm);
+            nudAntennaPivot.Value = glm.ToNud((Properties.VehicleSettings.Default.setVehicle_antennaPivot), mf.m2InchOrCm, nudAntennaPivot.DecimalPlaces);
+            nudAntennaHeight.Value = glm.ToNud(Properties.VehicleSettings.Default.setVehicle_antennaHeight, mf.m2InchOrCm, nudAntennaHeight.DecimalPlaces);
+            nudAntennaOffset.Value = glm.ToNud(Properties.VehicleSettings.Default.setVehicle_antennaOffset, mf.m2InchOrCm, nudAntennaOffset.DecimalPlaces);
+            nudWheelbase.Value = glm.ToNud(Math.Abs(Properties.VehicleSettings.Default.setVehicle_wheelbase), mf.m2InchOrCm, nudWheelbase.DecimalPlaces);
+            nudVehicleTrack.Value = glm.ToNud(Math.Abs(Properties.VehicleSettings.Default.setVehicle_trackWidth), mf.m2InchOrCm, nudVehicleTrack.DecimalPlaces);
 
             cboxDataInvertRoll.Checked = Properties.VehicleSettings.Default.setIMU_invertRoll;
             mf.ahrs.isRollInvert = Properties.VehicleSettings.Default.setIMU_invertRoll;

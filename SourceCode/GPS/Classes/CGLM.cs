@@ -11,6 +11,15 @@ namespace AgOpenGPS
     {
         private const double DefaultZeroTolerance = 1e-6;
 
+        /// <summary>
+        /// sandy: stored value (metres, or cm for snap distance) times the display factor, rounded to the box's decimals.
+        /// Rounds instead of (int) truncating: 0.29 m * 100 is 28.999.. and showed and re-saved as 28 cm.
+        /// </summary>
+        public static decimal ToNud(double stored, double factor, int decimals)
+        {
+            return Math.Round((decimal)(stored * factor), decimals, MidpointRounding.AwayFromZero);
+        }
+
         public static bool IsZero(double value, double tolerance = DefaultZeroTolerance)
         {
             return Math.Abs(value) <= tolerance;

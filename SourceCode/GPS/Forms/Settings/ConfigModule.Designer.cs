@@ -396,11 +396,11 @@ namespace AgOpenGPS
 
             double bob = Properties.Settings.Default.set_youTurnDistanceFromBoundary * mf.m2FtOrM;
             if (bob < 0.2) bob = 0.2;
-            nudTurnDistanceFromBoundary.Value = (decimal)(Math.Round(bob, 2));
+            nudTurnDistanceFromBoundary.Value = glm.ToNud(bob, 1, nudTurnDistanceFromBoundary.DecimalPlaces);
 
             bob = Properties.Settings.Default.set_youTurnRadius * mf.m2FtOrM;
             if (bob < 2) bob = 2;
-            nudYouTurnRadius.Value = (decimal)(Math.Round(bob, 2));
+            nudYouTurnRadius.Value = glm.ToNud(bob, 1, nudYouTurnRadius.DecimalPlaces);
 
             lblFtMUTurn.Text = lblFtMTurnRadius.Text = mf.unitsFtM;
         }
@@ -483,7 +483,7 @@ namespace AgOpenGPS
         {
             lblTramWidthUnits.Text = mf.unitsInCm;
 
-            nudTramWidth.Value = (int)(Math.Abs(Properties.Settings.Default.setTram_tramWidth) * mf.m2InchOrCm);
+            nudTramWidth.Value = glm.ToNud(Math.Abs(Properties.Settings.Default.setTram_tramWidth), mf.m2InchOrCm, nudTramWidth.DecimalPlaces);
             chkBoxOverrideTramControlPos.Checked = Properties.ToolSettings.Default.setTool_isTramOuterInverted;
             cboxDisplayTramControl.Checked = Properties.ToolSettings.Default.setTool_isDisplayTramControl;
         }

@@ -205,10 +205,10 @@ namespace AgOpenGPS
                 label112.Text = mf.unitsInCm;
             }
 
-            nudDrawbarLength.Value = (int)(Math.Abs(Properties.ToolSettings.Default.setVehicle_hitchLength) * mf.m2InchOrCm);
+            nudDrawbarLength.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_hitchLength), mf.m2InchOrCm, nudDrawbarLength.DecimalPlaces);
 
-            nudTrailingHitchLength.Value = (int)(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolTrailingHitchLength) * mf.m2InchOrCm);
-            nudTankHitch.Value = (int)(Math.Abs(Properties.ToolSettings.Default.setVehicle_tankTrailingHitchLength) * mf.m2InchOrCm);
+            nudTrailingHitchLength.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolTrailingHitchLength), mf.m2InchOrCm, nudTrailingHitchLength.DecimalPlaces);
+            nudTankHitch.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_tankTrailingHitchLength), mf.m2InchOrCm, nudTankHitch.DecimalPlaces);
         }
 
         private void tabTHitch_Leave(object sender, EventArgs e)
@@ -337,14 +337,14 @@ namespace AgOpenGPS
         #region offset
         private void tabToolOffset_Enter(object sender, EventArgs e)
         {
-            nudOffset.Value = (decimal)(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolOffset) * mf.m2InchOrCm);
+            nudOffset.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolOffset), mf.m2InchOrCm, nudOffset.DecimalPlaces);
 
             rbtnToolRightPositive.Checked = false;
             rbtnLeftNegative.Checked = false;
             rbtnToolRightPositive.Checked = Properties.ToolSettings.Default.setVehicle_toolOffset > 0;
             rbtnLeftNegative.Checked = Properties.ToolSettings.Default.setVehicle_toolOffset < 0;
 
-            nudOverlap.Value = (decimal)(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolOverlap) * mf.m2InchOrCm);
+            nudOverlap.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setVehicle_toolOverlap), mf.m2InchOrCm, nudOverlap.DecimalPlaces);
 
             rbtnToolOverlap.Checked = false;
             rbtnToolGap.Checked = false;
@@ -457,7 +457,7 @@ namespace AgOpenGPS
 
         private void tabToolPivot_Enter(object sender, EventArgs e)
         {
-            nudTrailingToolToPivotLength.Value = (decimal)(Math.Abs(Properties.ToolSettings.Default.setTool_trailingToolToPivotLength) * mf.m2InchOrCm);
+            nudTrailingToolToPivotLength.Value = glm.ToNud(Math.Abs(Properties.ToolSettings.Default.setTool_trailingToolToPivotLength), mf.m2InchOrCm, nudTrailingToolToPivotLength.DecimalPlaces);
 
             rbtnPivotBehindPos.Checked = false;
             rbtnPivotAheadNeg.Checked = false;
@@ -622,29 +622,29 @@ namespace AgOpenGPS
 
                 cboxNumSections.Text = numberOfSections.ToString();
                 defaultSectionWidth = Properties.ToolSettings.Default.setTool_defaultSectionWidth;
-                nudDefaultSectionWidth.Value = (int)(defaultSectionWidth * mf.m2InchOrCm);
+                nudDefaultSectionWidth.Value = glm.ToNud(defaultSectionWidth, mf.m2InchOrCm, nudDefaultSectionWidth.DecimalPlaces);
 
                 panelSymmetricSections.Visible = false;
 
                 nudNumberOfSections.Visible = false;
                 cboxNumSections.Visible = true;
 
-                nudSection01.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position2 - Properties.ToolSettings.Default.setSection_position1) * (decimal)mf.m2InchOrCm);
-                nudSection02.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position3 - Properties.ToolSettings.Default.setSection_position2) * (decimal)mf.m2InchOrCm);
-                nudSection03.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position4 - Properties.ToolSettings.Default.setSection_position3) * (decimal)mf.m2InchOrCm);
-                nudSection04.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position5 - Properties.ToolSettings.Default.setSection_position4) * (decimal)mf.m2InchOrCm);
-                nudSection05.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position6 - Properties.ToolSettings.Default.setSection_position5) * (decimal)mf.m2InchOrCm);
-                nudSection06.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position7 - Properties.ToolSettings.Default.setSection_position6) * (decimal)mf.m2InchOrCm);
-                nudSection07.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position8 - Properties.ToolSettings.Default.setSection_position7) * (decimal)mf.m2InchOrCm);
-                nudSection08.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position9 - Properties.ToolSettings.Default.setSection_position8) * (decimal)mf.m2InchOrCm);
-                nudSection09.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position10 - Properties.ToolSettings.Default.setSection_position9) * (decimal)mf.m2InchOrCm);
-                nudSection10.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position11 - Properties.ToolSettings.Default.setSection_position10) * (decimal)mf.m2InchOrCm);
-                nudSection11.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position12 - Properties.ToolSettings.Default.setSection_position11) * (decimal)mf.m2InchOrCm);
-                nudSection12.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position13 - Properties.ToolSettings.Default.setSection_position12) * (decimal)mf.m2InchOrCm);
-                nudSection13.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position14 - Properties.ToolSettings.Default.setSection_position13) * (decimal)mf.m2InchOrCm);
-                nudSection14.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position15 - Properties.ToolSettings.Default.setSection_position14) * (decimal)mf.m2InchOrCm);
-                nudSection15.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position16 - Properties.ToolSettings.Default.setSection_position15) * (decimal)mf.m2InchOrCm);
-                nudSection16.Value = Math.Abs((Properties.ToolSettings.Default.setSection_position17 - Properties.ToolSettings.Default.setSection_position16) * (decimal)mf.m2InchOrCm);
+                nudSection01.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position2 - Properties.ToolSettings.Default.setSection_position1)), mf.m2InchOrCm, nudSection01.DecimalPlaces);
+                nudSection02.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position3 - Properties.ToolSettings.Default.setSection_position2)), mf.m2InchOrCm, nudSection02.DecimalPlaces);
+                nudSection03.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position4 - Properties.ToolSettings.Default.setSection_position3)), mf.m2InchOrCm, nudSection03.DecimalPlaces);
+                nudSection04.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position5 - Properties.ToolSettings.Default.setSection_position4)), mf.m2InchOrCm, nudSection04.DecimalPlaces);
+                nudSection05.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position6 - Properties.ToolSettings.Default.setSection_position5)), mf.m2InchOrCm, nudSection05.DecimalPlaces);
+                nudSection06.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position7 - Properties.ToolSettings.Default.setSection_position6)), mf.m2InchOrCm, nudSection06.DecimalPlaces);
+                nudSection07.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position8 - Properties.ToolSettings.Default.setSection_position7)), mf.m2InchOrCm, nudSection07.DecimalPlaces);
+                nudSection08.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position9 - Properties.ToolSettings.Default.setSection_position8)), mf.m2InchOrCm, nudSection08.DecimalPlaces);
+                nudSection09.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position10 - Properties.ToolSettings.Default.setSection_position9)), mf.m2InchOrCm, nudSection09.DecimalPlaces);
+                nudSection10.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position11 - Properties.ToolSettings.Default.setSection_position10)), mf.m2InchOrCm, nudSection10.DecimalPlaces);
+                nudSection11.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position12 - Properties.ToolSettings.Default.setSection_position11)), mf.m2InchOrCm, nudSection11.DecimalPlaces);
+                nudSection12.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position13 - Properties.ToolSettings.Default.setSection_position12)), mf.m2InchOrCm, nudSection12.DecimalPlaces);
+                nudSection13.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position14 - Properties.ToolSettings.Default.setSection_position13)), mf.m2InchOrCm, nudSection13.DecimalPlaces);
+                nudSection14.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position15 - Properties.ToolSettings.Default.setSection_position14)), mf.m2InchOrCm, nudSection14.DecimalPlaces);
+                nudSection15.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position16 - Properties.ToolSettings.Default.setSection_position15)), mf.m2InchOrCm, nudSection15.DecimalPlaces);
+                nudSection16.Value = glm.ToNud(Math.Abs((double)(Properties.ToolSettings.Default.setSection_position17 - Properties.ToolSettings.Default.setSection_position16)), mf.m2InchOrCm, nudSection16.DecimalPlaces);
 
                 //based on number of sections and values update the page before displaying
                 UpdateSpinners();
@@ -663,7 +663,7 @@ namespace AgOpenGPS
                 nudNumberOfSections.Value = numberOfSections;
 
                 defaultSectionWidth = Properties.ToolSettings.Default.setTool_sectionWidthMulti;
-                nudDefaultSectionWidth.Value = (decimal)(Math.Round((defaultSectionWidth * mf.m2InchOrCm), 1));
+                nudDefaultSectionWidth.Value = glm.ToNud(defaultSectionWidth, mf.m2InchOrCm, nudDefaultSectionWidth.DecimalPlaces);
 
                 SetNudZoneMinMax();
 
