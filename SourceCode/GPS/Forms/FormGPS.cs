@@ -453,6 +453,8 @@ namespace AgOpenGPS
             panelSim.Width = 700;
             panelSim.Top = Height - 60;
 
+            InitCabOverlay();
+
             //set the language to last used
             SetLanguage(RegistrySettings.culture);
 

@@ -153,6 +153,10 @@ namespace AgOpenGPS.Properties
         // ===== UDP SETTINGS =====
         public int SetGPS_udpWatchMsec = 50;
 
+        // ===== SANDY SOIL: cab overlay =====
+        public double setDisplay_targetSpeed = 0; // km/h, 0 = no target line
+        public string setAiO_statusUrl = "http://127.0.0.1:8126/status"; // AiO relay, empty = no marker panel
+
         public LoadResult Load()
         {
             string envPath = Path.Combine(RegistrySettings.environmentDirectory, "environment.xml");

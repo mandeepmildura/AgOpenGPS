@@ -372,6 +372,8 @@ namespace AgOpenGPS
                     lblSpeed.Text = SpeedMPH;
                     //btnContour.Text = InchXTE; //cross track error
                 }
+
+                UpdateCabOverlay();
             } //end every 1/2 second
 
             //every fourth second update  ///////////////////////////   Fourth  ////////////////////////////
