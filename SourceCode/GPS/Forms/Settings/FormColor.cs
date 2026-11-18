@@ -183,6 +183,7 @@ namespace AgOpenGPS
 
         private void btnReset_Click(object sender, EventArgs e)
         {
+            if (AgOpenGPS.Forms.FormDialog.ShowQuestion("Reset colours?", "All screen colours go back to the AgOpenGPS defaults.") != DialogResult.OK) return;
             if (!mf.isDay) mf.SwapDayNightMode();
             mf.frameDayColor = Color.FromArgb(210, 210, 230);
             mf.BackColor = mf.frameDayColor;
