@@ -94,7 +94,7 @@ namespace AgIO
                     "AgIO profile was recovered from .last backup because the main file was unreadable.");
             }
 
-            if (Settings.Default.setDisplay_StartMinimized)
+            if (Settings.Default.setDisplay_StartMinimized || Array.IndexOf(Environment.GetCommandLineArgs(), "/min") > 0)
             {
                 this.WindowState = FormWindowState.Minimized;
             }

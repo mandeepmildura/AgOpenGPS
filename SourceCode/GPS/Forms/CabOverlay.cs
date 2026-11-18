@@ -26,6 +26,13 @@ namespace AgOpenGPS
 
         private void InitCabOverlay()
         {
+            ApplySandyLookOnce();
+            LabelLeftRail();
+            lblFix.AutoSize = true;
+            lblFix.Font = new Font("Segoe UI Semibold", 11f);
+            lblFix.Padding = new Padding(8, 1, 8, 1);
+            lblFix.ForeColor = Color.Black;
+
             speedCard = new CabCard { Size = new Size(190, 118), Location = new Point(12, 44), Cursor = Cursors.Hand };
             speedCard.Click += (s, e) => EditTargetSpeed();
             oglMain.Controls.Add(speedCard);
@@ -38,6 +45,67 @@ namespace AgOpenGPS
                 Visible = false
             };
             oglMain.Controls.Add(markerCard);
+        }
+
+        // Sun colours (light frame, sand ground, no dark texture) as the starting point.
+        // Once per settings file, so a driver's own colour changes afterwards stick.
+        private static void ApplySandyLookOnce()
+        {
+            if (Settings.Default.setSandy_lookVersion >= 1) return;
+            Settings.Default.setDisplay_colorDayFrame = Color.FromArgb(244, 243, 239);
+            Settings.Default.setDisplay_colorFieldDay = Color.FromArgb(214, 208, 190);
+            Settings.Default.setDisplay_isTextureOn = false;
+            Settings.Default.setSandy_lookVersion = 1;
+            Settings.Default.Save();
+        }
+
+        // A word under each left-rail icon, as in the design.
+        private void LabelLeftRail()
+        {
+            var f = new Font("Segoe UI Semibold", 9.5f);
+            foreach (var (b, text) in new[] { (btnNavigationSettings, "View"), (btnJobMenu, "Field"), (btnStartAgIO, "AgIO") })
+            {
+                b.Text = text; b.Font = f; b.ForeColor = Color.Black;
+                b.TextImageRelation = TextImageRelation.ImageAboveText;
+                b.ImageAlign = ContentAlignment.MiddleCenter; b.TextAlign = ContentAlignment.BottomCenter;
+            }
+            foreach (var (i, text) in new[] { (toolStripDropDownButton4, "Tools"), (toolStripDropDownButton1, "Settings"), (toolStripBtnFieldTools, "Field tools") })
+            {
+                i.Text = text; i.Font = f; i.ForeColor = Color.Black;
+                i.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+                i.TextImageRelation = TextImageRelation.ImageAboveText;
+                i.Owner.AutoSize = true; // grow the strip to fit the word
+            }
+        }
+
+        // Plain words for the GPS state, coloured so it reads at a glance in the sun.
+        private void UpdateGpsPill()
+        {
+            string q;
+            switch (pn.fixQuality)
+            {
+                case 4: q = "RTK Fix"; break;
+                case 5: q = "RTK Float"; break;
+                case 2: q = "DGPS only"; break;
+                case 1: q = "GPS only"; break;
+                case 8: q = "Simulator"; break;
+                case 0: q = "No fix"; break;
+                default: q = "Estimate"; break;
+            }
+            lblFix.ForeColor = Color.Black; // stock night mode turns labels white
+            lblFix.Text = q + " · " + pn.satellitesTracked + " sats · age " + pn.age.ToString("N1") + " s";
+            lblFix.BackColor = pn.fixQuality == 4 ? Color.FromArgb(198, 232, 198)
+                             : pn.fixQuality == 5 || pn.fixQuality == 8 ? Color.FromArgb(255, 222, 170)
+                             : Color.FromArgb(255, 196, 196);
+        }
+
+        // called when GPS data stops arriving
+        private void ShowNoGpsTopBar()
+        {
+            if (speedCard == null) return;
+            lblFix.Text = "No GPS · check AgIO";
+            lblFix.BackColor = Color.FromArgb(255, 196, 196);
+            lblSpeed.Text = DateTime.Now.ToString("h:mm tt");
         }
 
         private void EditTargetSpeed()
@@ -74,6 +142,10 @@ namespace AgOpenGPS
                 speedCard.SubAccent = "";
             }
             speedCard.Day = markerCard.Day = isDay;
+            lblSpeed.Text = DateTime.Now.ToString("h:mm tt"); // speed lives in the card; the top-right corner is the clock
+            var railText = isDay ? Color.Black : Color.FromArgb(232, 234, 237);
+            btnNavigationSettings.ForeColor = btnJobMenu.ForeColor = btnStartAgIO.ForeColor = railText;
+            toolStripDropDownButton4.ForeColor = toolStripDropDownButton1.ForeColor = toolStripBtnFieldTools.ForeColor = railText;
             speedCard.Invalidate();
 
             PollAio();
@@ -152,7 +224,7 @@ namespace AgOpenGPS
     {
         // Day = sunlight: black on white, bold, dark accents (glare washes out dark screens and pale colours).
         // Night = dark card so it doesn't dazzle. Follows AgOpenGPS's day/night button.
-        private static readonly Color[] DayPal = { Color.White, Color.Black, Color.FromArgb(55, 60, 66), Color.FromArgb(176, 64, 0), Color.FromArgb(200, 205, 211), Color.FromArgb(0, 82, 184), Color.Black };
+        private static readonly Color[] DayPal = { Color.White, Color.Black, Color.FromArgb(55, 60, 66), Color.FromArgb(176, 64, 0), Color.FromArgb(200, 205, 211), Color.FromArgb(0, 82, 184), Color.FromArgb(90, 90, 90) };
         private static readonly Color[] NightPal = { Color.FromArgb(22, 25, 29), Color.FromArgb(232, 234, 237), Color.FromArgb(154, 163, 173), Color.FromArgb(242, 163, 58), Color.FromArgb(44, 49, 55), Color.FromArgb(79, 179, 255), Color.FromArgb(22, 25, 29) };
         private Color Bg, Fg, Muted, Accent, Track, Bar, Edge;
         public bool Day = true;
@@ -167,6 +239,27 @@ namespace AgOpenGPS
             Font = new Font("Segoe UI", 10f);
         }
 
+        private const float Radius = 14;
+
+        private static GraphicsPath Rounded(RectangleF r, float rad)
+        {
+            var p = new GraphicsPath();
+            float d = rad * 2;
+            p.AddArc(r.X, r.Y, d, d, 180, 90);
+            p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+            p.CloseFigure();
+            return p;
+        }
+
+        // clip to the rounded shape so the map shows in the corners
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            using (var p = Rounded(new RectangleF(0, 0, Width, Height), Radius)) Region = new Region(p);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             var p = Day ? DayPal : NightPal;
@@ -175,7 +268,8 @@ namespace AgOpenGPS
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             g.Clear(Bg);
-            using (var edge = new Pen(Edge, 3)) g.DrawRectangle(edge, 1, 1, Width - 3, Height - 3);
+            using (var path = Rounded(new RectangleF(1, 1, Width - 3, Height - 3), Radius))
+            using (var edge = new Pen(Edge, 2)) g.DrawPath(edge, path);
 
             using (var small = new Font("Segoe UI Semibold", 10.5f))
             using (var mid = new Font("Segoe UI", 17f, FontStyle.Bold))

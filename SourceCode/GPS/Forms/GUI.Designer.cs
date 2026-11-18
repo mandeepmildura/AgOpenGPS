@@ -297,7 +297,7 @@ namespace AgOpenGPS
                 trk.autoTrack3SecTimer++;
                 vehicle.deadZoneDelayCounter++;
 
-                lblFix.Text = FixQuality + "Age: " + pn.age.ToString("N1");
+                UpdateGpsPill();
 
 
                 switch (pn.fixQuality)
@@ -1499,6 +1499,7 @@ namespace AgOpenGPS
             sentenceCounter = 300;
             oglMain.MakeCurrent();
             oglMain.Refresh();
+            ShowNoGpsTopBar();
         }
 
         #region Properties // ---------------------------------------------------------------------

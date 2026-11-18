@@ -517,6 +517,7 @@ namespace AgOpenGPS
                         ProcessStartInfo processInfo = new ProcessStartInfo
                         {
                             FileName = strPath,
+                            Arguments = "/min", // auto-start: AgIO stays out of the way; the GPS pill shows its state
                             WorkingDirectory = Path.GetDirectoryName(strPath)
                         };
                         Process proc = Process.Start(processInfo);
