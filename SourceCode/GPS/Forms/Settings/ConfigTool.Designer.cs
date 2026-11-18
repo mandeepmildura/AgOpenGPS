@@ -1336,7 +1336,7 @@ namespace AgOpenGPS
         //update tool width label at bottom of window
         private void SectionFeetInchesTotalWidthLabelUpdate(bool isMetric, double toolWidthInMeters)
         {
-            lblInchesCm.Text = isMetric ? gStr.gsCentimeters : gStr.gsInches;
+            lblInchesCm.Text = isMetric ? "Millimeter" : gStr.gsInches; //sandy: small unit is mm
             lblFeetMeters.Text = isMetric ? gStr.gsMeters : "Feet";
 
             lblSecTotalWidth.Text = Distance.MediumDistanceString(isMetric, toolWidthInMeters);
