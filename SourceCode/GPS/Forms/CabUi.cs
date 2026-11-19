@@ -19,13 +19,14 @@ namespace AgOpenGPS
         private bool cabUiOn, cabNoGps, cabLayingOut, markDayDirty, cabMapStyled;
         public bool CabUiOn => cabUiOn; // map drawing (vehicle, tool, lines) restyles itself when this is on
         private int cabTick;
-        private int cabGlY => cabUiOn ? 180 : 0; // moves the stock on-map turn arrows clear of the speed dial
+        private int cabGlY => cabUiOn ? (int)(180 * CabIsland.S) : 0; // moves the stock on-map turn arrows clear of the speed dial
         private CabIsland isHead, isXt, isStat, isRail, isSpeed, isZoom, isTrees, isDock;
         private Control[] cabPopups;
 
         private void InitCabUi()
         {
             cabUiOn = true;
+            MinimumSize = new Size(640, 480); // small or heavily scaled cab screens: the islands shrink to fit (CabIsland.S)
             isHead = Island(PaintHead); isXt = Island(PaintXt); isStat = Island(PaintStat);
             isRail = Island(PaintRail); isSpeed = Island(PaintSpeed); isZoom = Island(PaintZoom);
             isTrees = Island(PaintTrees); isDock = Island(PaintDock);
@@ -88,15 +89,15 @@ namespace AgOpenGPS
             oglMain.BringToFront();
             foreach (var c in cabPopups) if (c.Visible) c.BringToFront();
 
-            int w = Math.Max(700, oglMain.Width), h = Math.Max(500, oglMain.Height);
-            isHead.Location = new Point(16, 16); isHead.Height = 68;
-            isStat.Top = 16; isStat.Height = 68;
-            isXt.Bounds = new Rectangle(w / 2 - 150, 16, 300, 106);
-            isRail.Location = new Point(16, 100); isRail.Width = 96;
-            isSpeed.Bounds = new Rectangle(128, 100, 292, 156);
-            isZoom.Bounds = new Rectangle(w - 80, 100, 64, 132);
-            isTrees.Bounds = new Rectangle(16, h - 232, w - 32, 104);
-            isDock.Bounds = new Rectangle(16, h - 112, w - 32, 96);
+            // The layout is designed for 1350 x 900. On anything smaller every island shrinks by the same factor,
+            // so nothing overlaps and the bottom row never falls off the screen.
+            CabIsland.S = Math.Max(0.4f, Math.Min(1f, Math.Min(oglMain.Width / 1350f, oglMain.Height / 900f)));
+            float w = oglMain.Width / CabIsland.S, h = oglMain.Height / CabIsland.S;
+            isXt.Put(w / 2 - 150, 16, 300, 106);
+            isSpeed.Put(128, 100, 292, 156);
+            isZoom.Put(w - 80, 100, 64, 132);
+            isTrees.Put(16, h - 232, w - 32, 104);
+            isDock.Put(16, h - 112, w - 32, 96);
             cabLayingOut = false;
             UpdateCabUi();
         }
@@ -109,16 +110,17 @@ namespace AgOpenGPS
 
             int headW = 72 + 68 + Math.Max(TextRenderer.MeasureText(HeadTitle(), CabDraw.F20b).Width,
                                       TextRenderer.MeasureText(HeadSub(), CabDraw.F14).Width);
-            isHead.Width = Math.Max(120, Math.Min(headW, oglMain.Width / 2 - 182));
+            float lw = oglMain.Width / CabIsland.S;
+            isHead.Put(16, 16, Math.Max(120, Math.Min(headW, lw / 2 - 182)), 68);
             int statW = 10 + TextRenderer.MeasureText(GpsWords() + GpsDetail(), CabDraw.F17b).Width + 44
                       + TextRenderer.MeasureText(ClockText(), CabDraw.F20b).Width + 22;
-            isStat.Width = statW; isStat.Left = oglMain.Width - 16 - statW;
-            isRail.Height = 16 + RailCount() * 74 + (RailCount() - 1) * 4;
+            isStat.Put(lw - 16 - statW, 16, statW, 68);
+            isRail.Put(16, 100, 96, 16 + RailCount() * 74 + (RailCount() - 1) * 4);
 
             isXt.Visible = isJobStarted && (ct.isContourBtnOn || trk.idx > -1);
             isTrees.Visible = aioFresh;
             isDock.Visible = isJobStarted;
-            int simBottom = oglMain.Height - (!isJobStarted ? 16 : aioFresh ? 244 : 124); // sits above whatever is showing
+            int simBottom = oglMain.Height - (int)((!isJobStarted ? 16 : aioFresh ? 244 : 124) * CabIsland.S); // sits above whatever is showing
             panelSim.Location = new Point((oglMain.Width - panelSim.Width) / 2, simBottom - panelSim.Height);
 
             foreach (var i in new[] { isHead, isXt, isStat, isRail, isSpeed, isZoom, isTrees, isDock }) i.Invalidate();
@@ -400,7 +402,16 @@ namespace AgOpenGPS
     // A floating rounded panel on the map. Its painter draws the content and registers hit areas.
     public class CabIsland : Control
     {
+        public static float S = 1; // screen pixels per layout unit; 1 on a 1350 x 900 or larger map
         public float Radius = 24;
+        // painters and hit areas work in layout units, whatever the scale
+        public new float Width => base.Width / S;
+        public new float Height => base.Height / S;
+        public void Put(float x, float y, float w, float h)
+        {
+            var r = Rectangle.Round(new RectangleF(x * S, y * S, w * S, h * S));
+            if (Bounds != r) Bounds = r; else OnSizeChanged(EventArgs.Empty); // same pixels, maybe a new scale
+        }
         public Action<Graphics, CabIsland> Painter;
         private readonly List<KeyValuePair<RectangleF, Action>> hits = new List<KeyValuePair<RectangleF, Action>>();
         private int pressed = -1;
@@ -417,8 +428,8 @@ namespace AgOpenGPS
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
-            if (Width < 8 || Height < 8) return; // collapsed while the window is minimised or still loading
-            using (var p = CabDraw.Round(new RectangleF(0, 0, Width, Height), Radius)) Region = new Region(p);
+            if (base.Width < 8 || base.Height < 8) return; // collapsed while the window is minimised or still loading
+            using (var p = CabDraw.Round(new RectangleF(0, 0, base.Width, base.Height), Radius * S)) Region = new Region(p);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -428,7 +439,8 @@ namespace AgOpenGPS
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
             g.Clear(CabTheme.Island);
             hits.Clear();
-            if (Width < 8 || Height < 8) return;
+            if (base.Width < 8 || base.Height < 8) return;
+            g.ScaleTransform(S, S);
             using (var path = CabDraw.Round(new RectangleF(0.75f, 0.75f, Width - 2.5f, Height - 2.5f), Radius))
             using (var edge = new Pen(CabTheme.Edge, 1.5f)) g.DrawPath(edge, path);
             // a drawing fault must never take the guidance screen down: skip this frame and carry on
@@ -438,13 +450,13 @@ namespace AgOpenGPS
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            pressed = hits.FindLastIndex(h => h.Key.Contains(e.Location));
+            pressed = hits.FindLastIndex(h => h.Key.Contains(e.X / S, e.Y / S));
             Invalidate();
         }
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            Action a = pressed >= 0 && pressed < hits.Count && hits[pressed].Key.Contains(e.Location) ? hits[pressed].Value : null;
+            Action a = pressed >= 0 && pressed < hits.Count && hits[pressed].Key.Contains(e.X / S, e.Y / S) ? hits[pressed].Value : null;
             pressed = -1;
             Invalidate();
             a?.Invoke();
