@@ -77,7 +77,7 @@ namespace AgOpenGPS
             int w = Math.Max(700, oglMain.Width), h = Math.Max(500, oglMain.Height);
             isHead.Location = new Point(16, 16); isHead.Height = 68;
             isStat.Top = 16; isStat.Height = 68;
-            isXt.Bounds = new Rectangle(w / 2 - 150, 16, 300, 84);
+            isXt.Bounds = new Rectangle(w / 2 - 150, 16, 300, 106);
             isRail.Location = new Point(16, 100); isRail.Width = 96;
             isSpeed.Bounds = new Rectangle(128, 100, 292, 156);
             isZoom.Bounds = new Rectangle(w - 80, 100, 64, 132);
@@ -188,8 +188,21 @@ namespace AgOpenGPS
             string side = Math.Abs(mm) < 10 ? "on line" : mm > 0 ? "right of line" : "left of line";
             float wv = CabDraw.Measure(g, val, CabDraw.F30b), ws = CabDraw.Measure(g, side, CabDraw.F16s);
             float sx = (isl.Width - (wv + 8 + ws)) / 2f;
-            CabDraw.TextMid(g, val, CabDraw.F30b, CabTheme.Ink, sx, 52);
-            CabDraw.TextMid(g, side, CabDraw.F16s, CabTheme.Muted, sx + wv + 8, 56);
+            CabDraw.TextMid(g, val, CabDraw.F30b, CabTheme.Ink, sx, 50);
+            CabDraw.TextMid(g, side, CabDraw.F16s, CabTheme.Muted, sx + wv + 8, 54);
+            CabDraw.TextCentre(g, RowText(), CabDraw.F14s, CabTheme.Muted, isl.Width / 2f, 85);
+        }
+
+        // which pass we are on (stock numbering, e.g. 31L) and how far the line has been nudged
+        private string RowText()
+        {
+            if (ct.isContourBtnOn || trk.idx < 0) return "Contour";
+            bool ab = trk.gArr[trk.idx].mode == TrackMode.AB;
+            int away = ab ? ABLine.howManyPathsAway : curve.howManyPathsAway;
+            bool sameWay = ab ? ABLine.isHeadingSameWay : curve.isHeadingSameWay;
+            double nudge = trk.gArr[trk.idx].nudgeDistance;
+            return "Row " + (away > -1 ? (away + 1) + "R" : -away + "L") + (sameWay ? " ↑" : " ↓")
+                + (nudge == 0 ? "" : " · line moved " + CabSmall(Math.Abs(nudge)));
         }
 
         private int RailCount() => isJobStarted ? 7 : 6;
@@ -300,7 +313,8 @@ namespace AgOpenGPS
             CabDraw.Tile(g, isl, steer, "wheel", isBtnAutoSteerOn ? "Steer ON" : "Steer off",
                 "angle " + mc.actualSteerAngleDegrees.ToString("N1") + "°",
                 () => CabDo(() => btnAutoSteer_Click(this, EventArgs.Empty)), isBtnAutoSteerOn ? 3 : 0, 20, false, false, true);
-            CabDraw.Tile(g, isl, new RectangleF(steer.X - 10 - 190, y, 190, h), "uturn", "U-turn", yt.isYouTurnBtnOn ? "on" : "off",
+            CabDraw.Tile(g, isl, new RectangleF(steer.X - 10 - 190, y, 190, h), "uturn", "U-turn",
+                (yt.isYouTurnBtnOn ? "on" : "off") + (bnd.isHeadlandOn && bnd.HeadlandDistance.HasValue ? " · " + bnd.HeadlandDistance.Value.ToString("N0") + " m" : ""),
                 () => CabDo(() => btnAutoYouTurn_Click(this, EventArgs.Empty)), yt.isYouTurnBtnOn ? 2 : 0, 20);
         }
 

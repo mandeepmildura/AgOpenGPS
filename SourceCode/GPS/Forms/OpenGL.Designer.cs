@@ -482,7 +482,7 @@ namespace AgOpenGPS
                         if (isLightbarOn) DrawSteerBarText();
                     }
 
-                    if (trk.idx > -1 && !ct.isContourBtnOn) DrawTrackInfo();
+                    if (trk.idx > -1 && !ct.isContourBtnOn && !cabUiOn) DrawTrackInfo(); // cab screen: row is in the cross-track panel
 
                     if (bnd.bndList.Count > 0 && yt.isYouTurnBtnOn) DrawUTurnBtn();
 
@@ -570,7 +570,7 @@ namespace AgOpenGPS
                         DrawVersion("Beta Testing v" + Program.SemVer);
                     }
 
-                    if (bnd.isHeadlandOn && isHeadlandDistanceOn)
+                    if (bnd.isHeadlandOn && isHeadlandDistanceOn && !cabUiOn) // cab screen: shown on the U-turn button
                     {
                         DrawHeadlandDistance();
                     }
