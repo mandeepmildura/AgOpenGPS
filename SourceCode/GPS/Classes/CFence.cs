@@ -56,7 +56,17 @@ namespace AgOpenGPS
 
         public void DrawFenceLines()
         {
-            if (!mf.mc.isOutOfBounds)
+            if (!mf.mc.isOutOfBounds && mf.CabUiOn) // cab screen: one quiet dark line
+            {
+                CabTheme.Gl(CabTheme.Ink, 190);
+                GL.LineWidth(2.5f);
+
+                for (int i = 0; i < bndList.Count; i++)
+                {
+                    bndList[i].fenceLineEar.DrawPolygon();
+                }
+            }
+            else if (!mf.mc.isOutOfBounds)
             {
                 GL.Color4(0, 0, 0, 0.8);
                 GL.LineWidth(6);

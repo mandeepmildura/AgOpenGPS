@@ -177,7 +177,7 @@ namespace AgOpenGPS
                                     count2 = triList.Count;
                                     GL.Begin(PrimitiveType.TriangleStrip);
 
-                                    if (cabUiOn) CabTheme.Gl(CabTheme.Cover, 185); // cab screen: one calm worked colour
+                                    if (cabUiOn) CabTheme.Gl(CabTheme.Cover); // cab screen: one calm worked colour
                                     else if (isDay) GL.Color4((byte)triList[0].easting, (byte)triList[0].northing, (byte)triList[0].heading, (byte)152);
                                     else GL.Color4((byte)triList[0].easting, (byte)triList[0].northing, (byte)triList[0].heading, (byte)(152 * 0.5));
 
@@ -275,7 +275,7 @@ namespace AgOpenGPS
 
                     if (patchCounter > 0)
                     {
-                        if (cabUiOn) CabTheme.Gl(CabTheme.Cover, 185);
+                        if (cabUiOn) CabTheme.Gl(CabTheme.Cover);
                         else if (isDay) GL.Color4(sectionColorDay.R, sectionColorDay.G, sectionColorDay.B, (byte)152);
                         else GL.Color4(sectionColorDay.R, sectionColorDay.G, sectionColorDay.B, (byte)(76));
 
@@ -357,7 +357,13 @@ namespace AgOpenGPS
                         }
 
                         //Draw headland
-                        if (bnd.isHeadlandOn && bnd.bndList.Count > 0)
+                        if (cabUiOn && bnd.isHeadlandOn && bnd.bndList.Count > 0) // cab screen: one thin grey line
+                        {
+                            GL.LineWidth(2);
+                            CabTheme.Gl(CabTheme.Muted);
+                            bnd.bndList[0].hdLine.DrawPolygon();
+                        }
+                        else if (bnd.isHeadlandOn && bnd.bndList.Count > 0)
                         {
                             GL.LineWidth(ABLine.lineWidth * 3);
 
@@ -526,7 +532,7 @@ namespace AgOpenGPS
                             sounds.isRTKAlarming = true;
                             sounds.RTKWasAlarming = true;
                             RTKBackSinceUtc = DateTime.MinValue; // reset since we are not fixed
-                            DrawLostRTK();
+                            if (!cabUiOn) DrawLostRTK(); // cab screen: the GPS chip turns red instead
                         }
                         else // pn.fixQuality == 4
                         {
@@ -641,12 +647,16 @@ namespace AgOpenGPS
                         }
                     }
 
-                    GL.Begin(PrimitiveType.LineLoop);
-                    GL.Vertex3(-oglMain.Width / 2, 0, 0);
-                    GL.Vertex3(oglMain.Width / 2, 0, 0);
-                    GL.Vertex3(oglMain.Width / 2, oglMain.Height, 0);
-                    GL.Vertex3(-oglMain.Width / 2, oglMain.Height, 0);
-                    GL.End();
+                    // cab screen: no black frame round the map; the frame appears only as an alarm
+                    if (!cabUiOn || mc.isOutOfBounds || (isRTK_AlarmOn && sounds.isRTKAlarming) || (yt.isYouTurnBtnOn && yt.turnTooCloseTrigger))
+                    {
+                        GL.Begin(PrimitiveType.LineLoop);
+                        GL.Vertex3(-oglMain.Width / 2, 0, 0);
+                        GL.Vertex3(oglMain.Width / 2, 0, 0);
+                        GL.Vertex3(oglMain.Width / 2, oglMain.Height, 0);
+                        GL.Vertex3(-oglMain.Width / 2, oglMain.Height, 0);
+                        GL.End();
+                    }
 
                     GL.PopMatrix();
                     GL.MatrixMode(MatrixMode.Projection);

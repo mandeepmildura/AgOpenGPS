@@ -65,6 +65,18 @@ namespace AgOpenGPS
                 TimedMessageBox(4000, mi.Text, "Restart AgOpenGPS to switch");
             };
             fileToolStripMenuItem.DropDownItems.Add(mi);
+            if (!cab) return;
+            // The cab screen has no window buttons, and nothing near a driving hand may close the app:
+            // Exit lives here, behind an "are you sure?" question.
+            Action<string, EventHandler> add = (text, click) => fileToolStripMenuItem.DropDownItems.Add(new ToolStripMenuItem(text, null, click));
+            fileToolStripMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            add("Minimise", btnMinimizeMainForm_Click);
+            add("Window / full screen", btnMaximizeMainForm_Click);
+            add("Exit AgOpenGPS", (s, e) =>
+            {
+                // the stock exit box counts down and closes by itself, so ask first
+                if (AgOpenGPS.Forms.FormDialog.ShowQuestion("Exit AgOpenGPS", "Are you sure you want to close AgOpenGPS?") == DialogResult.OK) btnShutdown_Click(s, e);
+            });
         }
 
         // called after the stock layout code and on every map resize
@@ -95,11 +107,11 @@ namespace AgOpenGPS
             if (!cabUiOn || isDock == null) return;
             CabTheme.Day = isDay;
 
-            int headW = 72 + Math.Max(TextRenderer.MeasureText(HeadTitle(), CabDraw.F20b).Width,
-                                      TextRenderer.MeasureText(HeadSub(), CabDraw.F14).Width) + 18;
-            isHead.Width = Math.Max(120, Math.Min(headW, oglMain.Width / 2 - 190));
+            int headW = 72 + 68 + Math.Max(TextRenderer.MeasureText(HeadTitle(), CabDraw.F20b).Width,
+                                      TextRenderer.MeasureText(HeadSub(), CabDraw.F14).Width);
+            isHead.Width = Math.Max(120, Math.Min(headW, oglMain.Width / 2 - 182));
             int statW = 10 + TextRenderer.MeasureText(GpsWords() + GpsDetail(), CabDraw.F17b).Width + 44
-                      + TextRenderer.MeasureText(ClockText(), CabDraw.F20b).Width + 22 + 48 + 10;
+                      + TextRenderer.MeasureText(ClockText(), CabDraw.F20b).Width + 22;
             isStat.Width = statW; isStat.Left = oglMain.Width - 16 - statW;
             isRail.Height = 16 + RailCount() * 74 + (RailCount() - 1) * 4;
 
@@ -165,15 +177,24 @@ namespace AgOpenGPS
         {
             var menu = new RectangleF(10, 10, 48, 48);
             CabDraw.Tile(g, isl, menu, "menu", null, null, () => CabDrop(fileToolStripMenuItem), 0, 16);
-            g.SetClip(new RectangleF(70, 0, isl.Width - 84, isl.Height));
-            CabDraw.Text(g, HeadTitle(), CabDraw.F20b, CabTheme.Ink, 72, 10);
+            // minimise sits at the far end of the title, top-left: easy to find, well away from the steering hand
+            CabDraw.Tile(g, isl, new RectangleF(isl.Width - 58, 10, 48, 48), "min", null, null, () => btnMinimizeMainForm_Click(this, EventArgs.Empty), 0, 16);
+            g.SetClip(new RectangleF(70, 0, isl.Width - 70 - 64, isl.Height));
+            string title = HeadTitle(); // a long field name ends in "…" instead of being cut mid-letter
+            if (CabDraw.Measure(g, title, CabDraw.F20b) > isl.Width - 72 - 66)
+            {
+                while (title.Length > 1 && CabDraw.Measure(g, title + "…", CabDraw.F20b) > isl.Width - 72 - 66) title = title.Substring(0, title.Length - 1);
+                title += "…";
+            }
+            CabDraw.Text(g, title, CabDraw.F20b, CabTheme.Ink, 72, 10);
             CabDraw.Text(g, HeadSub(), CabDraw.F14, CabTheme.Muted, 72, 38);
             g.ResetClip();
         }
 
         private void PaintStat(Graphics g, CabIsland isl)
         {
-            bool good = !cabNoGps && pn.fixQuality == 4, fair = !cabNoGps && (pn.fixQuality == 5 || pn.fixQuality == 8);
+            bool alarm = isRTK_AlarmOn && sounds.isRTKAlarming; // stock RTK alarm: the chip goes red (the big map text is hidden)
+            bool good = !cabNoGps && pn.fixQuality == 4, fair = !cabNoGps && !alarm && (pn.fixQuality == 5 || pn.fixQuality == 8);
             Color fg = good ? CabTheme.Ok : fair ? CabTheme.Warn : CabTheme.Bad;
             Color bg = good ? CabTheme.OkSoft : fair ? CabTheme.WarnSoft : CabTheme.BadSoft;
             float wWords = CabDraw.Measure(g, GpsWords(), CabDraw.F17b), wDet = CabDraw.Measure(g, GpsDetail(), CabDraw.F17);
@@ -183,8 +204,6 @@ namespace AgOpenGPS
             CabDraw.TextMid(g, GpsWords(), CabDraw.F17b, fg, chip.X + 38, 34);
             CabDraw.TextMid(g, GpsDetail(), CabDraw.F17, CabTheme.Ink, chip.X + 38 + wWords, 34);
             CabDraw.TextMid(g, ClockText(), CabDraw.F20b, CabTheme.Ink, chip.Right + 16, 34);
-            var power = new RectangleF(isl.Width - 58, 10, 48, 48);
-            CabDraw.Tile(g, isl, power, "power", null, null, () => btnShutdown_Click(this, EventArgs.Empty), 0, 16);
         }
 
         private void PaintXt(Graphics g, CabIsland isl)
@@ -366,7 +385,7 @@ namespace AgOpenGPS
         public static Color Ink => C(0x14181C, 0xECEEF0);
         public static Color Muted => C(0x636A72, 0x98A1AB);
         public static Color Edge => C(0xD6D1C2, 0x343A41);
-        public static Color Ring => C(0xE6E2D6, 0x33383E);
+        public static Color Ring => C(0xD6D1C2, 0x3A4047); // dial track: strong enough to read in sun
         public static Color Accent => C(0xC2470A, 0xF5A13A);
         public static Color AccentInk => C(0xFFFFFF, 0x1A1206);
         public static Color AccentSoft => C(0xFBE6D8, 0x3D2C14);
@@ -539,7 +558,7 @@ namespace AgOpenGPS
             ["uturn"] = "M7 21V10a5 5 0 0 1 10 0v6M13.5 13l3.5 3.5 3.5-3.5",
             ["wheel"] = "M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0M3.5 10.5l6.6 1M20.5 10.5l-6.6 1M12 14v7",
             ["tree"] = "M12 22v-7M12 15a5.5 5.5 0 0 1-4.6-8.5a4.8 4.8 0 0 1 9.2 0a5.5 5.5 0 0 1-4.6 8.5z",
-            ["power"] = "M12 3v8M6.3 6.3a8 8 0 1 0 11.4 0",
+            ["min"] = "M6 17h12",
         };
         private static readonly Dictionary<string, GraphicsPath> Cache = new Dictionary<string, GraphicsPath>();
 
