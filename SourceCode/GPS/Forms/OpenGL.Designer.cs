@@ -1,4 +1,4 @@
-﻿using AgLibrary.Logging;
+using AgLibrary.Logging;
 using AgOpenGPS;
 using AgOpenGPS.Core.Drawing;
 using AgOpenGPS.Core.DrawLib;
@@ -489,11 +489,12 @@ namespace AgOpenGPS
                     if ((isBtnAutoSteerOn || yt.isYouTurnBtnOn) && !ct.isContourBtnOn) DrawManUTurnBtn();
 
                     //if (isCompassOn) DrawCompass();
-                    DrawCompassText();
+                    // sandy cab screen draws its own zoom, heading-free top bar, speed dial and steer angle
+                    if (!cabUiOn) DrawCompassText();
 
-                    if (isSpeedoOn) DrawSpeedo();
+                    if (isSpeedoOn && !cabUiOn) DrawSpeedo();
 
-                    DrawSteerCircle();
+                    if (!cabUiOn) DrawSteerCircle();
 
                     if (tool.isDisplayTramControl && tram.displayMode != 0) { DrawTramMarkers(); }
 
@@ -1753,7 +1754,7 @@ namespace AgOpenGPS
             if (!isStanleyUsed && isUTurnOn)
             {
                 GL.Color3(0.90f, 0.90f, 0.293f);
-                XyCoord center = new XyCoord(two3, 120);
+                XyCoord center = new XyCoord(two3, 120 + cabGlY);
                 XyDelta delta = new XyDelta(82, 30);
                 ScreenTextures.TurnManual.DrawCentered(center, delta);
             }
@@ -1764,7 +1765,7 @@ namespace AgOpenGPS
             if (isLateralOn)
             {
                 GL.Color3(0.590f, 0.90f, 0.93f);
-                XyCoord center = new XyCoord(two3, 200);
+                XyCoord center = new XyCoord(two3, 200 + cabGlY);
                 XyDelta delta = new XyDelta(100, 30);
 
                 ScreenTextures.LateralManual.DrawCentered(center, delta);
@@ -1792,7 +1793,7 @@ namespace AgOpenGPS
             Texture2D turnTexture = !yt.isYouTurnTriggered ? ScreenTextures.Turn : ScreenTextures.TurnCancel;
             //int bottom = 90;
             int two3 = oglMain.Width / 5;
-            XyCoord turnTextureCenter = new XyCoord(two3, 120);
+            XyCoord turnTextureCenter = new XyCoord(two3, 120 + cabGlY);
             turnTexture.DrawCentered(turnTextureCenter, !yt.isTurnLeft ? new XyDelta(62, 30) : new XyDelta(-62, 30));
 
             //draw K turn/ normal turn button
@@ -1801,7 +1802,7 @@ namespace AgOpenGPS
             GL.Color3(1.0f, 1.0f, 1.0f);
 
             Texture2D uTurnTexture = yt.uTurnStyle == 0 ? ScreenTextures.UTurnU : ScreenTextures.UTurnH;
-            XyCoord uTurnTextureCenter = new XyCoord(two3, 130);
+            XyCoord uTurnTextureCenter = new XyCoord(two3, 130 + cabGlY);
             uTurnTexture.DrawCentered(uTurnTextureCenter, new XyDelta(32, 30));
 
             two3 -= 140;
@@ -1811,22 +1812,22 @@ namespace AgOpenGPS
             {
                 if (!yt.isYouTurnTriggered)
                 {
-                    font.DrawText(-40 + two3, 120, DistPivotM);
+                    font.DrawText(-40 + two3, 120 + cabGlY, DistPivotM);
                 }
                 else
                 {
-                    font.DrawText(-40 + two3, 120, yt.onA.ToString());
+                    font.DrawText(-40 + two3, 120 + cabGlY, yt.onA.ToString());
                 }
             }
             else
             {
                 if (!yt.isYouTurnTriggered)
                 {
-                    font.DrawText(-40 + two3, 120, DistPivotFt);
+                    font.DrawText(-40 + two3, 120 + cabGlY, DistPivotFt);
                 }
                 else
                 {
-                    font.DrawText(-40 + two3, 120, yt.onA.ToString());
+                    font.DrawText(-40 + two3, 120 + cabGlY, yt.onA.ToString());
                 }
             }
         }
@@ -2135,7 +2136,10 @@ namespace AgOpenGPS
                 if (wide < 64) wide = 64;
 
                 // Draw the dot-rail LightBar using the same sizing
-                if (isLightbarOn) DrawLightBar(oglMain.Width, oglMain.Height, avgPivotDistance);
+                if (isLightbarOn && !cabUiOn) DrawLightBar(oglMain.Width, oglMain.Height, avgPivotDistance);
+
+                // sandy cab screen shows cross-track in its own top panel (values above still update)
+                if (cabUiOn) return;
 
                 // Clamp display range for the main label
                 if (avgPivotDistance > 999) avgPivotDistance = 999;

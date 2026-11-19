@@ -28,6 +28,9 @@ namespace AgOpenGPS
         private void InitCabOverlay()
         {
             ApplySandyLookOnce();
+            LoadMarkDay();
+            AddScreenSwitchMenu();
+            if (Settings.Default.setSandy_cabUi) { InitCabUi(); return; }
             LabelLeftRail();
             lblFix.AutoSize = true;
             lblFix.Font = new Font("Segoe UI Semibold", 11f);
@@ -120,6 +123,7 @@ namespace AgOpenGPS
         // Plain words for the GPS state, coloured so it reads at a glance in the sun.
         private void UpdateGpsPill()
         {
+            cabNoGps = false;
             string q;
             switch (pn.fixQuality)
             {
@@ -141,6 +145,7 @@ namespace AgOpenGPS
         // called when GPS data stops arriving
         private void ShowNoGpsTopBar()
         {
+            if (cabUiOn) { cabNoGps = true; return; }
             if (speedCard == null) return;
             lblFix.Text = "No GPS · check AgIO";
             lblFix.BackColor = Color.FromArgb(255, 196, 196);
@@ -160,6 +165,7 @@ namespace AgOpenGPS
         // called every half second from the main timer
         private void UpdateCabOverlay()
         {
+            if (cabUiOn) { PollAio(); UpdateMarkerStats(); UpdateCabUi(); return; }
             if (speedCard == null) return;
 
             double kmh = avgSpeed;
@@ -210,21 +216,24 @@ namespace AgOpenGPS
             });
         }
 
-        private void UpdateMarkerCard()
+        // latest AiO numbers, shared by the classic marker card and the new tree panel
+        private bool aioFresh;
+        private int aioHits, aioTrees, aioNd = -1;
+        private double aioNa, aioNc;
+
+        // reads the latest AiO status into the fields above and counts new marks; false = no live data
+        private bool UpdateMarkerStats()
         {
-            bool fresh = aioStatus != null && (DateTime.Now - aioStatusTime).TotalSeconds < 5;
-            if (!fresh)
-            {
-                // ponytail: hide after 5 s without data; a "marker offline" state can come if drivers want it
-                markerCard.Visible = aioStatus != null && markerCard.Visible && (DateTime.Now - aioStatusTime).TotalSeconds < 5;
-                return;
-            }
+            // ponytail: no data for 5 s = panel hidden; a "marker offline" state can come if drivers want it
+            aioFresh = aioStatus != null && (DateTime.Now - aioStatusTime).TotalSeconds < 5;
+            if (!aioFresh) return false;
 
             var j = aioStatus;
-            int hits = (int?)j["hits"] ?? 0;
-            int trees = (int?)j["trees"] ?? 0;
-            int nd = (int?)j["nd"] ?? -1;
-            double na = (double?)j["na"] ?? 0, nc = (double?)j["nc"] ?? 0, lhm = (double?)j["lhm"] ?? -1;
+            int hits = aioHits = (int?)j["hits"] ?? 0;
+            aioTrees = (int?)j["trees"] ?? 0;
+            aioNd = (int?)j["nd"] ?? -1;
+            aioNa = (double?)j["na"] ?? 0; aioNc = (double?)j["nc"] ?? 0;
+            double lhm = (double?)j["lhm"] ?? -1;
 
             // each rise in hits is a new mark; lhm then holds how far that mark landed from its tree
             if (lastHits >= 0 && hits > lastHits && lhm >= 0)
@@ -233,9 +242,18 @@ namespace AgOpenGPS
                 markCount++;
                 markMissSum += lhm;
                 if (lhm <= 0.10) markWithin10++;
+                markDayDirty = true;
             }
             if (markHitsAtFirst < 0) markHitsAtFirst = hits;
             lastHits = hits;
+            return true;
+        }
+
+        private void UpdateMarkerCard()
+        {
+            if (!UpdateMarkerStats()) { markerCard.Visible = false; return; }
+            int hits = aioHits, trees = aioTrees, nd = aioNd;
+            double na = aioNa, nc = aioNc;
 
             markerCard.Columns = new[]
             {

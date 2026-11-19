@@ -1,4 +1,4 @@
-﻿//Please, if you use this, share the improvements
+//Please, if you use this, share the improvements
 
 using AgLibrary.Logging;
 using AgOpenGPS.Core.Translations;
@@ -1027,6 +1027,8 @@ namespace AgOpenGPS
             {
                 LineUpAllZoneButtons();
             }
+
+            CabLayout();
         }
 
         private void ZoomByMouseWheel(object sender, MouseEventArgs e)
@@ -1226,7 +1228,7 @@ namespace AgOpenGPS
                     if (isBtnAutoSteerOn || yt.isYouTurnBtnOn)
                     {
                         //uturn and swap uturn direction
-                        if (point.Y < 150 && point.Y > 90 && (trk.idx > -1))
+                        if (point.Y - cabGlY < 150 && point.Y - cabGlY > 90 && (trk.idx > -1))
                         {
 
                             int middle = oglMain.Width / 2 + oglMain.Width / 5;
@@ -1302,7 +1304,7 @@ namespace AgOpenGPS
                         }
 
                         //lateral
-                        if (point.Y < 240 && point.Y > 170 && (trk.idx > -1))
+                        if (point.Y - cabGlY < 240 && point.Y - cabGlY > 170 && (trk.idx > -1))
                         {
                             int middle = oglMain.Width / 2 - oglMain.Width / 4;
                             if (point.X > middle - 100 && point.X < middle && isLateralOn)
