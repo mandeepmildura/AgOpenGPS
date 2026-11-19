@@ -15,7 +15,8 @@ namespace AgOpenGPS
     // Display only: nothing here steers or switches anything.
     public partial class FormGPS
     {
-        private CabCard speedCard, markerCard;
+        private CabCard speedCard, markerCard, barUturn, barSteer;
+        private CabCard[] cabBar;
         private static readonly HttpClient aioHttp = new HttpClient { Timeout = TimeSpan.FromMilliseconds(800) };
         private JObject aioStatus;
         private DateTime aioStatusTime = DateTime.MinValue;
@@ -37,14 +38,52 @@ namespace AgOpenGPS
             speedCard.Click += (s, e) => EditTargetSpeed();
             oglMain.Controls.Add(speedCard);
 
-            markerCard = new CabCard
-            {
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
-                Location = new Point(12, oglMain.Height - 96 - 120), // clear of the bottom buttons and steer gauge
-                Size = new Size(oglMain.Width - 24, 96),
-                Visible = false
-            };
+            markerCard = new CabCard { Visible = false };
             oglMain.Controls.Add(markerCard);
+
+            // Big labelled buttons along the bottom, as in the design. They call the stock
+            // handlers, so the stock buttons, sounds and safety checks stay in charge.
+            cabBar = new[]
+            {
+                BarButton("‹  Nudge left", () => btnAdjLeft_Click(this, EventArgs.Empty)),
+                BarButton("Snap to line", () => btnSnapToPivot_Click(this, EventArgs.Empty)),
+                BarButton("Nudge right  ›", () => btnAdjRight_Click(this, EventArgs.Empty)),
+                barUturn = BarButton("U-turn: off", () => btnAutoYouTurn_Click(this, EventArgs.Empty)),
+                barSteer = BarButton("Steer off", () => btnAutoSteer_Click(this, EventArgs.Empty)),
+            };
+            oglMain.Resize += (s, e) => LayoutCabBar();
+            LayoutCabBar();
+        }
+
+        private CabCard BarButton(string text, Action click)
+        {
+            var b = new CabCard { Title = text, IsButton = true, Cursor = Cursors.Hand, Visible = false };
+            b.Click += (s, e) => { click(); UpdateCabBar(); };
+            oglMain.Controls.Add(b);
+            return b;
+        }
+
+        private void LayoutCabBar()
+        {
+            const int h = 56, w = 150, gap = 8;
+            int y = oglMain.Height - 122 - h; // above the section buttons, bottom tool row and steer gauge
+            for (int i = 0; i < 3; i++) cabBar[i].Bounds = new Rectangle(12 + i * (w + gap), y, w, h);
+            barSteer.Bounds = new Rectangle(oglMain.Width - 12 - 190, y, 190, h);
+            barUturn.Bounds = new Rectangle(barSteer.Left - gap - w, y, w, h);
+            markerCard.Bounds = new Rectangle(12, y - gap - 96, oglMain.Width - 24, 96);
+        }
+
+        private void UpdateCabBar()
+        {
+            barUturn.Title = "U-turn: " + (yt.isYouTurnBtnOn ? "on" : "off");
+            barSteer.Title = isBtnAutoSteerOn ? "Steer ON" : "Steer off";
+            barSteer.Hot = isBtnAutoSteerOn;
+            foreach (var b in cabBar)
+            {
+                b.Visible = isJobStarted; // no field open = no line to steer, nudge or turn on
+                b.Day = isDay;
+                b.Invalidate();
+            }
         }
 
         // Sun colours (light frame, sand ground, no dark texture) as the starting point.
@@ -148,6 +187,7 @@ namespace AgOpenGPS
             toolStripDropDownButton4.ForeColor = toolStripDropDownButton1.ForeColor = toolStripBtnFieldTools.ForeColor = railText;
             speedCard.Invalidate();
 
+            UpdateCabBar();
             PollAio();
             UpdateMarkerCard();
         }
@@ -228,6 +268,7 @@ namespace AgOpenGPS
         private static readonly Color[] NightPal = { Color.FromArgb(22, 25, 29), Color.FromArgb(232, 234, 237), Color.FromArgb(154, 163, 173), Color.FromArgb(242, 163, 58), Color.FromArgb(44, 49, 55), Color.FromArgb(79, 179, 255), Color.FromArgb(22, 25, 29) };
         private Color Bg, Fg, Muted, Accent, Track, Bar, Edge;
         public bool Day = true;
+        public bool IsButton, Hot; // button: Title centred; Hot: filled with the accent colour (Steer ON)
 
         public string Title = "", Big = "", BigUnit = "", Sub = "", SubAccent = "";
         public CabCol[] Columns;
@@ -267,9 +308,17 @@ namespace AgOpenGPS
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            if (Hot) { Bg = Accent; Fg = Color.White; Edge = Accent; }
             g.Clear(Bg);
             using (var path = Rounded(new RectangleF(1, 1, Width - 3, Height - 3), Radius))
             using (var edge = new Pen(Edge, 2)) g.DrawPath(edge, path);
+
+            if (IsButton)
+            {
+                using (var f = new Font("Segoe UI Semibold", 13f))
+                    TextRenderer.DrawText(g, Title, f, ClientRectangle, Fg, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                return;
+            }
 
             using (var small = new Font("Segoe UI Semibold", 10.5f))
             using (var mid = new Font("Segoe UI", 17f, FontStyle.Bold))
