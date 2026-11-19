@@ -25,7 +25,7 @@ namespace AgOpenGPS.Core.Models
         private const double kilometersToMiles = 1 / milesToKilometers;
         private const double metersToFeet = 3.28;
         private const double metersToInches = 39.3701;
-        private const double metersToCm = 100;
+        private const double metersToMm = 1000; // sandy: metric small distances in mm
         private const double metersToMiles = metersToKilometers * kilometersToMiles;
 
         private double _distanceInMeters;
@@ -40,14 +40,14 @@ namespace AgOpenGPS.Core.Models
         public double InFeet => _distanceInMeters * metersToFeet;
 
 
-        // Return the distance (value and unit) in a string expressed in cm or inches, (depending on argument isMetric)
-        // Use 0 decimals for cm and 1 decimal for inches.
+        // Return the distance (value and unit) in a string expressed in mm (sandy) or inches, (depending on argument isMetric)
+        // Use 0 decimals for mm and 1 decimal for inches.
 
         public static string VerySmallDistanceString(bool isMetric, double distanceInMeters)
         {
             if (isMetric)
             {
-                return (distanceInMeters * metersToCm).ToString("N0") + " cm";
+                return (distanceInMeters * metersToMm).ToString("N0") + " mm";
             }
             else
             {
@@ -55,13 +55,13 @@ namespace AgOpenGPS.Core.Models
             }
         }
 
-        // Return the distance (value and unit) in a string expressed in cm or inches, (depending on argument isMetric)
-        // Use 0 decimals for both cm and inches.
+        // Return the distance (value and unit) in a string expressed in mm (sandy) or inches, (depending on argument isMetric)
+        // Use 0 decimals for both mm and inches.
         public static string SmallDistanceString(bool isMetric, double distanceInMeters)
         {
             if (isMetric)
             {
-                return (distanceInMeters * metersToCm).ToString("N0") + " cm";
+                return (distanceInMeters * metersToMm).ToString("N0") + " mm";
             }
             else
             {

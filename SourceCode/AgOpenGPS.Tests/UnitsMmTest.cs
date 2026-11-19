@@ -39,5 +39,13 @@ namespace AgOpenGPS.Tests
             Assert.That(glm.ToNud(20.0, 0.394, 1), Is.EqualTo(7.9m));  // imperial unchanged: 20 cm = 7.9 in
             Assert.That(glm.ToNud(0.29, glm.m2in, 0), Is.EqualTo(11m)); // imperial inches still whole
         }
+
+        [Test]
+        public void SummaryPageShowsMm()
+        {
+            Assert.That(AgOpenGPS.Core.Models.Distance.SmallDistanceString(true, 0.287), Is.EqualTo("287 mm"));
+            Assert.That(AgOpenGPS.Core.Models.Distance.VerySmallDistanceString(true, 0.025), Is.EqualTo("25 mm")); // nudge 2.5 cm
+            Assert.That(AgOpenGPS.Core.Models.Distance.SmallDistanceString(false, 0.287), Is.EqualTo("11 in"));
+        }
     }
 }

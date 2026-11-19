@@ -2444,7 +2444,8 @@ namespace AgOpenGPS
             //GPS Step
             if (distanceCurrentStepFixDisplay < 0.03 * 100)
                 GL.Color3(0.98f, 0.82f, 0.653f);
-            font.DrawText(center, 10, distanceCurrentStepFixDisplay.ToString("N1") + "cm", 1);
+            //sandy: metric in mm (display value is cm)
+            font.DrawText(center, 10, isMetric ? (distanceCurrentStepFixDisplay * 10).ToString("N0") + "mm" : distanceCurrentStepFixDisplay.ToString("N1") + "cm", 1);
 
             if (isMaxAngularVelocity)
             {
