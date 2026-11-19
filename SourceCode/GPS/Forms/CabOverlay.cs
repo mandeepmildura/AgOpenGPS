@@ -165,7 +165,7 @@ namespace AgOpenGPS
         // called every half second from the main timer
         private void UpdateCabOverlay()
         {
-            if (cabUiOn) { PollAio(); UpdateMarkerStats(); UpdateCabUi(); return; }
+            if (cabUiOn) { CabStyleMapOnce(); PollAio(); UpdateMarkerStats(); UpdateCabUi(); return; }
             if (speedCard == null) return;
 
             double kmh = avgSpeed;

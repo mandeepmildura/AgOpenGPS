@@ -94,15 +94,6 @@ namespace AgOpenGPS
         {
             if (!cabUiOn || isDock == null) return;
             CabTheme.Day = isDay;
-            if (!cabMapStyled)
-            {
-                // Clean top-down map, heading up, no floor grid. Set once after the stock settings have loaded
-                // and not saved, so the View panel can still change it and Classic keeps its own view.
-                cabMapStyled = true;
-                camera.PitchInDegrees = 0;
-                camera.FollowDirectionHint = true;
-                isGridOn = false;
-            }
 
             int headW = 72 + Math.Max(TextRenderer.MeasureText(HeadTitle(), CabDraw.F20b).Width,
                                       TextRenderer.MeasureText(HeadSub(), CabDraw.F14).Width) + 18;
@@ -121,6 +112,17 @@ namespace AgOpenGPS
             foreach (var i in new[] { isHead, isXt, isStat, isRail, isSpeed, isZoom, isTrees, isDock }) i.Invalidate();
 
             if (markDayDirty && ++cabTick % 60 == 0) SaveMarkDay(); // at most every 30 s
+        }
+
+        // Clean top-down map, heading up, no floor grid. Called from the main timer, so it runs once AFTER the
+        // stock settings have loaded (they would overwrite it). Not saved: the View panel can still change it.
+        private void CabStyleMapOnce()
+        {
+            if (cabMapStyled) return;
+            cabMapStyled = true;
+            camera.PitchInDegrees = 0;
+            camera.FollowDirectionHint = true;
+            isGridOn = false;
         }
 
         private void CabDo(Action a) { a(); UpdateCabUi(); }
