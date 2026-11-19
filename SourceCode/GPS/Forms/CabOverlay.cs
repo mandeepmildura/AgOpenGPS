@@ -149,7 +149,7 @@ namespace AgOpenGPS
             if (speedCard == null) return;
             lblFix.Text = "No GPS · check AgIO";
             lblFix.BackColor = Color.FromArgb(255, 196, 196);
-            lblSpeed.Text = DateTime.Now.ToString("h:mm tt");
+            lblSpeed.Text = DateTime.Now.ToString("h:mm");
         }
 
         private void EditTargetSpeed()
@@ -187,7 +187,7 @@ namespace AgOpenGPS
                 speedCard.SubAccent = "";
             }
             speedCard.Day = markerCard.Day = isDay;
-            lblSpeed.Text = DateTime.Now.ToString("h:mm tt"); // speed lives in the card; the top-right corner is the clock
+            lblSpeed.Text = DateTime.Now.ToString("h:mm"); // speed lives in the card; the top-right corner is the clock
             var railText = isDay ? Color.Black : Color.FromArgb(232, 234, 237);
             btnNavigationSettings.ForeColor = btnJobMenu.ForeColor = btnStartAgIO.ForeColor = railText;
             toolStripDropDownButton4.ForeColor = toolStripDropDownButton1.ForeColor = toolStripBtnFieldTools.ForeColor = railText;

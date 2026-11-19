@@ -32,7 +32,13 @@ namespace AgOpenGPS
             // stock pop-up panels live on the form; lift them above the full-window map when they open
             cabPopups = new Control[] { panelNavigation, flp1, panelSim, lblHardwareMessage, panelDrag };
             foreach (var c in cabPopups)
-                c.VisibleChanged += (s, e) => { var k = (Control)s; if (k.Visible) k.BringToFront(); };
+                c.VisibleChanged += (s, e) =>
+                {
+                    var k = (Control)s;
+                    if (!k.Visible) return;
+                    if (k == panelNavigation) k.Location = new Point(isRail.Right + 8, isRail.Top); // beside the rail, not over it
+                    k.BringToFront();
+                };
 
             oglMain.Resize += (s, e) => CabLayout();
             CabLayout();
@@ -108,15 +114,9 @@ namespace AgOpenGPS
 
         private void CabDo(Action a) { a(); UpdateCabUi(); }
 
-        // opens a stock drop-down menu next to the island that asked for it
-        private void CabDrop(ToolStripDropDownItem item, CabIsland from, float y)
-        {
-            item.ShowDropDown();
-            var p = from.PointToScreen(new Point(from.Width + 8, (int)y));
-            var area = Screen.FromControl(this).WorkingArea;
-            p.Y = Math.Max(area.Top, Math.Min(p.Y, area.Bottom - item.DropDown.Height));
-            item.DropDown.Location = p;
-        }
+        // Opens a stock drop-down menu. It appears at its stock position (Windows Forms pins a menu to its
+        // owner button, which now sits hidden behind the map) and Windows keeps it on screen.
+        private static void CabDrop(ToolStripDropDownItem item) => item.ShowDropDown();
 
         // ---- text sources -------------------------------------------------------------------
         private string HeadTitle() => isJobStarted ? displayFieldName + (aioFresh ? " · tree marking" : "") : "No field open";
@@ -141,13 +141,17 @@ namespace AgOpenGPS
         private string GpsDetail() => cabNoGps ? "  check AgIO" : "  " + pn.satellitesTracked + " sats · " + pn.age.ToString("N1") + " s";
 
         // small distances: mm in metric, inches otherwise
-        private string CabSmall(double metres) => isMetric ? (metres * 1000).ToString("N0") + " mm" : (metres * 39.37).ToString("N1") + " in";
+        private string CabSmall(double metres)
+        {
+            if (!isMetric) return (metres * 39.37).ToString("N1") + " in";
+            return Math.Abs(metres) >= 1 ? metres.ToString("N1") + " m" : (metres * 1000).ToString("N0") + " mm"; // "4,800 mm" reads badly
+        }
 
         // ---- painters -----------------------------------------------------------------------
         private void PaintHead(Graphics g, CabIsland isl)
         {
             var menu = new RectangleF(10, 10, 48, 48);
-            CabDraw.Tile(g, isl, menu, "menu", null, null, () => CabDrop(fileToolStripMenuItem, isHead, 76), 0, 16);
+            CabDraw.Tile(g, isl, menu, "menu", null, null, () => CabDrop(fileToolStripMenuItem), 0, 16);
             g.SetClip(new RectangleF(70, 0, isl.Width - 84, isl.Height));
             CabDraw.Text(g, HeadTitle(), CabDraw.F20b, CabTheme.Ink, 72, 10);
             CabDraw.Text(g, HeadSub(), CabDraw.F14, CabTheme.Muted, 72, 38);
@@ -198,14 +202,13 @@ namespace AgOpenGPS
                 CabDraw.Tile(g, isl, new RectangleF(8, y, 80, 74), icon, label, null, click, style, 18, true);
                 y += 78;
             };
-            float yTools = 8 + 78 * 2, ySet = 8 + 78 * 5;
             tile("field", "Field", () => btnJobMenu_Click(this, EventArgs.Empty), isJobStarted ? 2 : 1);
             tile("tracks", "Tracks", () => btnTrack_Click(this, EventArgs.Empty), 1);
-            tile("tools", "Tools", () => CabDrop(toolStripDropDownButton4, isRail, yTools), 1);
+            tile("tools", "Tools", () => CabDrop(toolStripDropDownButton4), 1);
             tile("view", "View", () => btnNavigationSettings_Click(this, EventArgs.Empty), 1);
             tile("agio", "AgIO", () => btnStartAgIO_Click(this, EventArgs.Empty), 1);
-            tile("gear", "Settings", () => CabDrop(toolStripDropDownButton1, isRail, ySet - 200), 1);
-            if (isJobStarted) tile("bound", "Boundary", () => CabDrop(toolStripBtnFieldTools, isRail, ySet - 120), 1);
+            tile("gear", "Settings", () => CabDrop(toolStripDropDownButton1), 1);
+            if (isJobStarted) tile("bound", "Boundary", () => CabDrop(toolStripBtnFieldTools), 1);
         }
 
         private void PaintSpeed(Graphics g, CabIsland isl)
