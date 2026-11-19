@@ -144,26 +144,38 @@ namespace AgOpenGPS
             double t = VehicleConfig.TrackWidth * 0.5, wb = VehicleConfig.Wheelbase;
             double steer = -(mf.timerSim.Enabled ? mf.sim.steerangleAve : mf.mc.actualSteerAngleDegrees);
 
-            void Box(double cx, double cy, double w, double h, double rot = 0)
+            // rounded box as a triangle fan: centre, then 6 points round each corner
+            void Box(double cx, double cy, double w, double h, double r, double rot = 0)
             {
                 GL.PushMatrix();
                 GL.Translate(cx, cy, 0);
                 GL.Rotate(rot, 0, 0, 1);
-                GL.Begin(PrimitiveType.Quads);
-                GL.Vertex2(-w / 2, -h / 2); GL.Vertex2(w / 2, -h / 2); GL.Vertex2(w / 2, h / 2); GL.Vertex2(-w / 2, h / 2);
+                GL.Begin(PrimitiveType.TriangleFan);
+                GL.Vertex2(0, 0);
+                for (int c = 0; c <= 4; c++)
+                {
+                    int q = c % 4; // corner 0 = top right, then anticlockwise; the 5th pass closes the fan
+                    double ox = (q == 0 || q == 3 ? 1 : -1) * (w / 2 - r), oy = (q < 2 ? 1 : -1) * (h / 2 - r);
+                    for (int k = 0; k <= 5; k++)
+                    {
+                        double a = (q * 90 + k * 18) * Math.PI / 180;
+                        GL.Vertex2(ox + r * Math.Cos(a), oy + r * Math.Sin(a));
+                        if (c == 4) break;
+                    }
+                }
                 GL.End();
                 GL.PopMatrix();
             }
 
             CabTheme.Gl(CabTheme.Ink);
-            Box(-t, 0, 0.5, 1.7); Box(t, 0, 0.5, 1.7); // rear wheels
-            Box(-t * 0.92, wb, 0.34, 1.0, steer); Box(t * 0.92, wb, 0.34, 1.0, steer); // front wheels turn with the steering
+            Box(-t, 0, 0.52, 1.7, 0.18); Box(t, 0, 0.52, 1.7, 0.18); // rear wheels
+            Box(-t * 0.9, wb, 0.34, 1.0, 0.12, steer); Box(t * 0.9, wb, 0.34, 1.0, 0.12, steer); // front wheels turn with the steering
             CabTheme.Gl(CabTheme.VehHi);
-            Box(0, wb * 0.62, 0.8, wb * 0.95); // bonnet
+            Box(0, wb * 0.66, 0.8, wb * 0.9, 0.26); // bonnet
             CabTheme.Gl(CabTheme.Ink);
-            Box(0, 0.25, t * 2 - 0.7, 1.6); // cab
+            Box(0, 0.3, t * 2 - 0.62, 1.7, 0.34); // cab
             CabTheme.Gl(CabTheme.Glass);
-            Box(0, 0.45, t * 2 - 1.1, 0.75); // glass
+            Box(0, 0.5, t * 2 - 1.08, 0.78, 0.16); // glass
         }
 
         public void DrawVehicle()
@@ -338,7 +350,7 @@ namespace AgOpenGPS
                 }
                 GL.End();
             }
-            if (mf.camera.camSetDistance > -75 && mf.isFirstHeadingSet)
+            if (mf.camera.camSetDistance > -75 && mf.isFirstHeadingSet && !mf.CabUiOn)
             {
                 //draw the bright antenna dot
                 // background layer

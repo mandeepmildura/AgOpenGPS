@@ -437,7 +437,7 @@ namespace AgOpenGPS
 
                     if (camera.camSetDistance > -250)
                     {
-                        if (trk.idx > -1 && !isStanleyUsed)
+                        if (trk.idx > -1 && !isStanleyUsed && !cabUiOn) // cab screen hides the steering goal-point square
                         {
                             ColorRgba foregroundColor =
                                 Math.Abs(vehicle.modeActualXTE) > 0.15 ?
