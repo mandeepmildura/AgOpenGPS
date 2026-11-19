@@ -268,7 +268,7 @@ namespace AgOpenGPS
                 trailingTool -= trailingToolToPivotLength;
             }
 
-            if (mf.isJobStarted)
+            if (mf.isJobStarted && !mf.CabUiOn) // cab screen hides the section look-ahead tuning lines
             {
                 //look ahead lines
                 GL.LineWidth(3);
@@ -304,6 +304,9 @@ namespace AgOpenGPS
             //TooDoo
             //hite = 0.2;
 
+            bool cab = mf.CabUiOn; // cab screen: slim dark bar, green while a section is on, orange pivot dot
+            double barH = cab ? hite * 0.3 : hite, tipH = cab ? barH : hite * 1.5;
+
             for (int j = 0; j < numOfSections; j++)
             {
                 //if section is on, green, if off, red color
@@ -324,21 +327,33 @@ namespace AgOpenGPS
                     //GL.Color3(0.7f, 0.2f, 0.2f);
                 }
 
+                if (cab) CabTheme.Gl(mf.section[j].isSectionOn ? CabTheme.Ok : CabTheme.Ink);
+
                 double mid = (mf.section[j].positionRight - mf.section[j].positionLeft) / 2 + mf.section[j].positionLeft;
                 XyCoord[] vertices = {
                     new XyCoord(mf.section[j].positionLeft, trailingTool),
-                    new XyCoord(mf.section[j].positionLeft, trailingTool - hite),
-                    new XyCoord(mid, trailingTool - hite * 1.5),
-                    new XyCoord(mf.section[j].positionRight, trailingTool - hite),
+                    new XyCoord(mf.section[j].positionLeft, trailingTool - barH),
+                    new XyCoord(mid, trailingTool - tipH),
+                    new XyCoord(mf.section[j].positionRight, trailingTool - barH),
                     new XyCoord(mf.section[j].positionRight, trailingTool),
                 };
                 GLW.DrawTriangleFanPrimitive(vertices);
 
-                if (mf.camera.camSetDistance > -width * 200)
+                if (!cab && mf.camera.camSetDistance > -width * 200)
                 {
                     GLW.SetColor(Colors.Black);
                     GLW.DrawLineLoopPrimitive(vertices);
                 }
+            }
+
+            if (cab)
+            {
+                CabTheme.Gl(CabTheme.Accent);
+                GL.PointSize(11);
+                GL.Begin(PrimitiveType.Points);
+                GL.Vertex3((farLeftPosition + farRightPosition) / 2, trailingTool - barH / 2, 0);
+                GL.End();
+                GL.PointSize(1);
             }
 
             //zones

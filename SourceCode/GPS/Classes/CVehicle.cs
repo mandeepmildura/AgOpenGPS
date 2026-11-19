@@ -138,6 +138,34 @@ namespace AgOpenGPS
             return goalPointDistance;
         }
 
+        // Sandy cab screen: a plain top-view tractor in the theme colours (origin = rear axle, +y forward)
+        private void DrawCabTractor()
+        {
+            double t = VehicleConfig.TrackWidth * 0.5, wb = VehicleConfig.Wheelbase;
+            double steer = -(mf.timerSim.Enabled ? mf.sim.steerangleAve : mf.mc.actualSteerAngleDegrees);
+
+            void Box(double cx, double cy, double w, double h, double rot = 0)
+            {
+                GL.PushMatrix();
+                GL.Translate(cx, cy, 0);
+                GL.Rotate(rot, 0, 0, 1);
+                GL.Begin(PrimitiveType.Quads);
+                GL.Vertex2(-w / 2, -h / 2); GL.Vertex2(w / 2, -h / 2); GL.Vertex2(w / 2, h / 2); GL.Vertex2(-w / 2, h / 2);
+                GL.End();
+                GL.PopMatrix();
+            }
+
+            CabTheme.Gl(CabTheme.Ink);
+            Box(-t, 0, 0.5, 1.7); Box(t, 0, 0.5, 1.7); // rear wheels
+            Box(-t * 0.92, wb, 0.34, 1.0, steer); Box(t * 0.92, wb, 0.34, 1.0, steer); // front wheels turn with the steering
+            CabTheme.Gl(CabTheme.VehHi);
+            Box(0, wb * 0.62, 0.8, wb * 0.95); // bonnet
+            CabTheme.Gl(CabTheme.Ink);
+            Box(0, 0.25, t * 2 - 0.7, 1.6); // cab
+            CabTheme.Gl(CabTheme.Glass);
+            Box(0, 0.45, t * 2 - 1.1, 0.75); // glass
+        }
+
         public void DrawVehicle()
         {
             GL.Rotate(glm.toDegrees(-mf.fixHeading), 0.0, 0.0, 1.0);
@@ -193,7 +221,11 @@ namespace AgOpenGPS
                 VehicleConfig.Color.Blue,
                 (byte)(255.0 * VehicleConfig.Opacity));
 
-            if (VehicleConfig.IsImage)
+            if (mf.CabUiOn && VehicleConfig.Type == VehicleType.Tractor)
+            {
+                DrawCabTractor();
+            }
+            else if (VehicleConfig.IsImage)
             {
                 if (VehicleConfig.Type == VehicleType.Tractor)
                 {

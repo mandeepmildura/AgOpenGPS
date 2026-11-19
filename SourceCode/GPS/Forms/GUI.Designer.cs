@@ -39,7 +39,7 @@ namespace AgOpenGPS
         public Color sectionColorDay;
         public Color fieldColorDay;
         public Color fieldColorNight;
-        public ColorRgba fieldColor => (ColorRgba)(isDay ? fieldColorDay : fieldColorNight);
+        public ColorRgba fieldColor => cabUiOn ? (ColorRgba)CabTheme.Ground : (ColorRgba)(isDay ? fieldColorDay : fieldColorNight);
         public ColorRgba worldGridColor => isDay ? Colors.WorldGridDayColor : Colors.WorldGridNightColor;
 
         public Color textColorDay;

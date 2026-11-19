@@ -383,14 +383,19 @@ namespace AgOpenGPS
 
             GLW.SetPointSize(1.0f);
 
+            bool cab = mf.CabUiOn; // cab screen: orange guide line, thin dashed neighbours, no reference line or shadow band
+
             //Draw reference AB line
             GeoCoord[] abEndPoints = { track.endPtA.ToGeoCoord(), track.endPtB.ToGeoCoord() };
-            GLW.SetLineWidth(4.0f);
-            GLW.EnableLineStipple();
-            GLW.SetLineStipple(1, 0x0F00);
-            GLW.SetColor(referenceLineRed);
-            GLW.DrawLinesPrimitive(abEndPoints);
-            GLW.DisableLineStipple();
+            if (!cab)
+            {
+                GLW.SetLineWidth(4.0f);
+                GLW.EnableLineStipple();
+                GLW.SetLineStipple(1, 0x0F00);
+                GLW.SetColor(referenceLineRed);
+                GLW.DrawLinesPrimitive(abEndPoints);
+                GLW.DisableLineStipple();
+            }
 
             // shadow
             double shadowOffset = isHeadingSameWay ? mf.tool.offset : -mf.tool.offset;
@@ -408,20 +413,32 @@ namespace AgOpenGPS
                 ptB + leftOffset
             };
 
-            GLW.SetColor(shadowAreaGray);
-            GLW.DrawTriangleFanPrimitive(shadowCoords);
-            GLW.SetColor(shadowLinesGray);
-            GLW.SetLineWidth(1.0f);
-            GLW.DrawLineLoopPrimitive(shadowCoords);
+            if (!cab)
+            {
+                GLW.SetColor(shadowAreaGray);
+                GLW.DrawTriangleFanPrimitive(shadowCoords);
+                GLW.SetColor(shadowLinesGray);
+                GLW.SetLineWidth(1.0f);
+                GLW.DrawLineLoopPrimitive(shadowCoords);
+            }
 
             //draw current AB Line
             GeoCoord[] currentAbLine = { currentLinePtA.ToGeoCoord(), currentLinePtB.ToGeoCoord() };
             LineStyle blackBackgroundStyle = new LineStyle(lineWidth * 3, Colors.Black);
             LineStyle purpleForgroundStyle = new LineStyle(lineWidth, currentAbLinePurple);
-            GLW.DrawLinesPrimitiveLayered(
-                currentAbLine,
-                blackBackgroundStyle,
-                purpleForgroundStyle);
+            if (cab)
+            {
+                GLW.SetLineWidth(lineWidth + 1.5f);
+                GLW.SetColor((ColorRgba)CabTheme.Accent);
+                GLW.DrawLinesPrimitive(currentAbLine);
+            }
+            else
+            {
+                GLW.DrawLinesPrimitiveLayered(
+                    currentAbLine,
+                    blackBackgroundStyle,
+                    purpleForgroundStyle);
+            }
 
             if (mf.isSideGuideLines && mf.camera.camSetDistance > mf.tool.width * -400)
             {
@@ -448,10 +465,22 @@ namespace AgOpenGPS
                 }
                 LineStyle extraGuidelinesBackgroundStyle = new LineStyle(lineWidth * 3, extraGuidelinesBlack);
                 LineStyle extraGuidelinesForegroundStyle = new LineStyle(lineWidth, extraGuidelinesGreen);
-                GLW.DrawLinesPrimitiveLayered(
-                    lines,
-                    extraGuidelinesBackgroundStyle,
-                    extraGuidelinesForegroundStyle);
+                if (cab)
+                {
+                    GLW.SetLineWidth(1.5f);
+                    GLW.EnableLineStipple();
+                    GLW.SetLineStipple(2, 0x0F0F);
+                    GLW.SetColor((ColorRgba)CabTheme.Row);
+                    GLW.DrawLinesPrimitive(lines);
+                    GLW.DisableLineStipple();
+                }
+                else
+                {
+                    GLW.DrawLinesPrimitiveLayered(
+                        lines,
+                        extraGuidelinesBackgroundStyle,
+                        extraGuidelinesForegroundStyle);
+                }
             }
             mf.yt.DrawYouTurn();
 

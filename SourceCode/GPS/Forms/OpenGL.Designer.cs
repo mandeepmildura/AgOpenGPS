@@ -107,7 +107,7 @@ namespace AgOpenGPS
 
                     #region World and Grid
 
-                    worldGrid.DrawFieldSurface(fieldColor, camera.ZoomValue, isTextureOn);
+                    worldGrid.DrawFieldSurface(fieldColor, camera.ZoomValue, isTextureOn && !cabUiOn);
 
                     if (isGridOn) worldGrid.DrawWorldGrid(worldGridColor);
 
@@ -177,7 +177,8 @@ namespace AgOpenGPS
                                     count2 = triList.Count;
                                     GL.Begin(PrimitiveType.TriangleStrip);
 
-                                    if (isDay) GL.Color4((byte)triList[0].easting, (byte)triList[0].northing, (byte)triList[0].heading, (byte)152);
+                                    if (cabUiOn) CabTheme.Gl(CabTheme.Cover, 185); // cab screen: one calm worked colour
+                                    else if (isDay) GL.Color4((byte)triList[0].easting, (byte)triList[0].northing, (byte)triList[0].heading, (byte)152);
                                     else GL.Color4((byte)triList[0].easting, (byte)triList[0].northing, (byte)triList[0].heading, (byte)(152 * 0.5));
 
                                     //if large enough patch and camera zoomed out, fake mipmap the patches, skip triangles
@@ -194,7 +195,7 @@ namespace AgOpenGPS
                                     else { for (int i = 1; i < count2; i++) GL.Vertex3(triList[i].easting, triList[i].northing, 0); }
                                     GL.End();
 
-                                    if (isSectionlinesOn)
+                                    if (isSectionlinesOn && !cabUiOn) // cab screen: no dark outline round every patch
                                     {
                                         //highlight lines
                                         GL.Color4(0.2, 0.2, 0.2, 1.0);
@@ -228,7 +229,7 @@ namespace AgOpenGPS
                                         GL.End();
                                     }
 
-                                    if (isDirectionMarkers)
+                                    if (isDirectionMarkers && !cabUiOn)
                                     {
                                         if (triList.Count > 42)
                                         {
@@ -274,14 +275,15 @@ namespace AgOpenGPS
 
                     if (patchCounter > 0)
                     {
-                        if (isDay) GL.Color4(sectionColorDay.R, sectionColorDay.G, sectionColorDay.B, (byte)152);
+                        if (cabUiOn) CabTheme.Gl(CabTheme.Cover, 185);
+                        else if (isDay) GL.Color4(sectionColorDay.R, sectionColorDay.G, sectionColorDay.B, (byte)152);
                         else GL.Color4(sectionColorDay.R, sectionColorDay.G, sectionColorDay.B, (byte)(76));
 
                         for (int j = 0; j < triStrip.Count; j++)
                         {
                             if (triStrip[j].isDrawing)
                             {
-                                if (tool.isMultiColoredSections)
+                                if (tool.isMultiColoredSections && !cabUiOn)
                                 {
                                     if (isDay) GL.Color4(tool.secColors[j].R, tool.secColors[j].G, tool.secColors[j].B, (byte)152);
                                     else GL.Color4(tool.secColors[j].R, tool.secColors[j].G, tool.secColors[j].B, (byte)(76));

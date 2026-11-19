@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using AgOpenGPS.Properties;
+using OpenTK.Graphics.OpenGL;
 
 namespace AgOpenGPS
 {
@@ -15,7 +16,8 @@ namespace AgOpenGPS
     // checks stay in charge. "Classic screen" in the top-left menu switches back.
     public partial class FormGPS
     {
-        private bool cabUiOn, cabNoGps, cabLayingOut, markDayDirty;
+        private bool cabUiOn, cabNoGps, cabLayingOut, markDayDirty, cabMapStyled;
+        public bool CabUiOn => cabUiOn; // map drawing (vehicle, tool, lines) restyles itself when this is on
         private int cabTick;
         private int cabGlY => cabUiOn ? 180 : 0; // moves the stock on-map turn arrows clear of the speed dial
         private CabIsland isHead, isXt, isStat, isRail, isSpeed, isZoom, isTrees, isDock;
@@ -92,6 +94,15 @@ namespace AgOpenGPS
         {
             if (!cabUiOn || isDock == null) return;
             CabTheme.Day = isDay;
+            if (!cabMapStyled)
+            {
+                // Clean top-down map, heading up, no floor grid. Set once after the stock settings have loaded
+                // and not saved, so the View panel can still change it and Classic keeps its own view.
+                cabMapStyled = true;
+                camera.PitchInDegrees = 0;
+                camera.FollowDirectionHint = true;
+                isGridOn = false;
+            }
 
             int headW = 72 + Math.Max(TextRenderer.MeasureText(HeadTitle(), CabDraw.F20b).Width,
                                       TextRenderer.MeasureText(HeadSub(), CabDraw.F14).Width) + 18;
@@ -342,6 +353,12 @@ namespace AgOpenGPS
     {
         public static bool Day = true;
         private static Color C(int day, int night) => Color.FromArgb(unchecked((int)0xFF000000) | (Day ? day : night));
+        public static void Gl(Color c, int alpha = 255) => GL.Color4(c.R, c.G, c.B, (byte)alpha);
+        public static Color Ground => C(0xDBD4BF, 0x25271F);
+        public static Color Cover => C(0xBCCBA8, 0x34422F);
+        public static Color Row => C(0x42684A, 0x86A878);
+        public static Color VehHi => C(0x3A424A, 0xAEB6BE);
+        public static Color Glass => C(0x8FB4C8, 0x5D8296);
         public static Color Island => C(0xFFFFFF, 0x1D2125);
         public static Color Tile => C(0xF0EDE4, 0x2A2F35);
         public static Color Ink => C(0x14181C, 0xECEEF0);
