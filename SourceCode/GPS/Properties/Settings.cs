@@ -156,6 +156,7 @@ namespace AgOpenGPS.Properties
         // ===== SANDY SOIL: cab overlay =====
         public double setDisplay_targetSpeed = 0; // km/h, 0 = no target line
         public string setAiO_statusUrl = "http://127.0.0.1:8126/status"; // AiO relay, empty = no marker panel
+        public string setAiO_baseUrl = "http://192.168.5.126"; // the AiO itself: the Marker ON/off tile POSTs en=0/1 to <this>/settings
         public bool setSandy_cabUi = true; // new floating-island cab screen (CabUi.cs); false = classic screen
         public string setSandy_markDay = ""; // "yyyy-MM-dd|marks|within100mm|missSum" for the Today column
         public int setSandy_lookVersion = 0; // sun colours applied once (CabOverlay.ApplySandyLookOnce)

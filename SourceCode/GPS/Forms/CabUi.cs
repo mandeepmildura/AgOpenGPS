@@ -339,15 +339,22 @@ namespace AgOpenGPS
             double snapCm = ToolSettings.Default.setAS_snapDistance;
             string step = CabSmall(snapCm * 0.01);
             float y = 12, h = 72;
-            CabDraw.Tile(g, isl, new RectangleF(12, y, 206, h), "left", "Nudge left", step, () => CabDo(() => btnAdjLeft_Click(this, EventArgs.Empty)), 0, 20);
-            CabDraw.Tile(g, isl, new RectangleF(228, y, 206, h), "snap", "Snap to line", null, () => CabDo(() => btnSnapToPivot_Click(this, EventArgs.Empty)), 0, 20);
-            CabDraw.Tile(g, isl, new RectangleF(444, y, 206, h), "right", "Nudge right", step, () => CabDo(() => btnAdjRight_Click(this, EventArgs.Empty)), 0, 20, false, true);
+            CabDraw.Tile(g, isl, new RectangleF(12, y, 180, h), "left", "Nudge left", step, () => CabDo(() => btnAdjLeft_Click(this, EventArgs.Empty)), 0, 20);
+            CabDraw.Tile(g, isl, new RectangleF(202, y, 180, h), "snap", "Snap to line", null, () => CabDo(() => btnSnapToPivot_Click(this, EventArgs.Empty)), 0, 20);
+            CabDraw.Tile(g, isl, new RectangleF(392, y, 180, h), "right", "Nudge right", step, () => CabDo(() => btnAdjRight_Click(this, EventArgs.Empty)), 0, 20, false, true);
 
             var steer = new RectangleF(isl.Width - 12 - 300, y, 300, h);
             CabDraw.Tile(g, isl, steer, "wheel", isBtnAutoSteerOn ? "Steer ON" : "Steer off",
                 "angle " + mc.actualSteerAngleDegrees.ToString("N1") + "°",
                 () => CabDo(() => btnAutoSteer_Click(this, EventArgs.Empty)), isBtnAutoSteerOn ? 3 : 0, 20, false, false, true);
-            CabDraw.Tile(g, isl, new RectangleF(steer.X - 10 - 190, y, 190, h), "uturn", "U-turn",
+
+            // Tree marker on/off, straight to the AiO. Grey when its status is more than 5 s old.
+            var marker = new RectangleF(steer.X - 10 - 200, y, 200, h);
+            bool? on = markerSwitch.Shown(AioEnabled, DateTime.Now);
+            CabDraw.Tile(g, isl, marker, "tree", on == null ? "Marker offline" : on.Value ? "Marker ON" : "Marker off",
+                on == null ? null : markerSwitch.Pending ? "switching…" : null,
+                () => CabDo(ToggleMarker), on == null ? 4 : on.Value ? 3 : 0, 20);
+            CabDraw.Tile(g, isl, new RectangleF(marker.X - 10 - 190, y, 190, h), "uturn", "U-turn",
                 (yt.isYouTurnBtnOn ? "on" : "off") + (bnd.isHeadlandOn && bnd.HeadlandDistance.HasValue ? " · " + bnd.HeadlandDistance.Value.ToString("N0") + " m" : ""),
                 () => CabDo(() => btnAutoYouTurn_Click(this, EventArgs.Empty)), yt.isYouTurnBtnOn ? 2 : 0, 20);
         }
@@ -514,13 +521,13 @@ namespace AgOpenGPS
         // centred on cx, cy
         public static void TextCentre(Graphics g, string s, Font f, Color c, float cx, float cy) => TextMid(g, s, f, c, cx - Measure(g, s, f) / 2, cy);
 
-        // A button inside an island. style: 0 soft tile, 1 plain, 2 inverted (active), 3 accent (Steer ON).
+        // A button inside an island. style: 0 soft tile, 1 plain, 2 inverted (active), 3 accent (Steer ON), 4 greyed (offline).
         public static void Tile(Graphics g, CabIsland isl, RectangleF r, string icon, string label, string sub, Action click,
             int style, float rad, bool vertical = false, bool iconRight = false, bool big = false)
         {
             isl.Hit(r, click);
-            Color bg = style == 3 ? CabTheme.Accent : style == 2 ? CabTheme.Ink : style == 0 ? CabTheme.Tile : CabTheme.Island;
-            Color fg = style == 3 ? CabTheme.AccentInk : style == 2 ? CabTheme.Island : CabTheme.Ink;
+            Color bg = style == 3 ? CabTheme.Accent : style == 2 ? CabTheme.Ink : style == 0 || style == 4 ? CabTheme.Tile : CabTheme.Island;
+            Color fg = style == 3 ? CabTheme.AccentInk : style == 2 ? CabTheme.Island : style == 4 ? CabTheme.Muted : CabTheme.Ink;
             Color subC = style == 3 || style == 2 ? fg : CabTheme.Muted;
             if (style != 1) Fill(g, r, rad, bg);
             if (isl.IsPressed(r)) Fill(g, r, rad, Color.FromArgb(style == 1 || style == 0 ? 36 : 60, CabTheme.Day == (style < 2) ? Color.Black : Color.White));

@@ -216,6 +216,28 @@ namespace AgOpenGPS
             });
         }
 
+        // ---- Marker ON / off tile ----
+        private static readonly HttpClient aioPost = new HttpClient { Timeout = TimeSpan.FromSeconds(3) }; // the AiO saves to flash before it answers
+        private readonly MarkerSwitch markerSwitch = new MarkerSwitch();
+
+        // the AiO's own enable flag; null = no fresh status (offline)
+        private bool? AioEnabled => aioFresh && aioStatus != null ? (bool?)(((int?)aioStatus["en"] ?? 0) == 1) : null;
+
+        // one POST per tap, straight to the AiO (the relay only reads). Same body the AiO's own settings page sends,
+        // minus the other fields, so only the enable flag changes.
+        private void ToggleMarker()
+        {
+            bool? en = markerSwitch.Tap(AioEnabled, DateTime.Now);
+            if (en == null) return; // offline: nothing to switch
+            string url = Settings.Default.setAiO_baseUrl.TrimEnd('/') + "/settings";
+            string body = "en=" + (en.Value ? "1" : "0");
+            Task.Run(async () =>
+            {
+                try { (await aioPost.PostAsync(url, new StringContent(body)).ConfigureAwait(false)).EnsureSuccessStatusCode(); }
+                catch { BeginInvoke((Action)(() => { markerSwitch.Failed(); UpdateCabUi(); })); } // the tile goes back to what the AiO last said
+            });
+        }
+
         // latest AiO numbers, shared by the classic marker card and the new tree panel
         private bool aioFresh;
         private int aioHits, aioTrees, aioNd = -1;
@@ -269,6 +291,37 @@ namespace AgOpenGPS
             markerCard.Visible = true;
             markerCard.Invalidate();
         }
+    }
+
+    // Tap-to-toggle with an optimistic state: shows the tapped state at once, keeps it until a poll
+    // agrees, and falls back to what the AiO reports if no poll agrees within ConfirmSeconds.
+    public class MarkerSwitch
+    {
+        public const double ConfirmSeconds = 6;
+        private bool? want;
+        private DateTime wantAt;
+
+        public bool Pending => want != null;
+
+        // what the tile shows; polledOn = latest fresh AiO "en", null = offline
+        public bool? Shown(bool? polledOn, DateTime now)
+        {
+            if (polledOn == null) { want = null; return null; }
+            if (want != null && (polledOn == want || (now - wantAt).TotalSeconds > ConfirmSeconds)) want = null;
+            return want ?? polledOn;
+        }
+
+        // the en value to send, or null when offline
+        public bool? Tap(bool? polledOn, DateTime now)
+        {
+            bool? s = Shown(polledOn, now);
+            if (s == null) return null;
+            want = !s.Value;
+            wantAt = now;
+            return want;
+        }
+
+        public void Failed() => want = null;
     }
 
     public struct CabCol
