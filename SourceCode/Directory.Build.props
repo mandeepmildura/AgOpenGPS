@@ -5,7 +5,7 @@
     <!-- Sandy Soil local builds (official CI stamps this via GitVersion). Bump sandy.N per build.
          "+sandy.N" is build metadata, so the updater still sees 6.8.6 and won't offer a "newer" 6.8.6. -->
     <Version>6.8.6</Version>
-    <InformationalVersion>6.8.6+sandy.6</InformationalVersion>
+    <InformationalVersion>6.8.6+sandy.7</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
