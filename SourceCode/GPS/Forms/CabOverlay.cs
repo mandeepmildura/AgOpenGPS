@@ -49,7 +49,7 @@ namespace AgOpenGPS
             cabBar = new[]
             {
                 BarButton("‹  Nudge left", () => btnAdjLeft_Click(this, EventArgs.Empty)),
-                BarButton("Snap to line", () => btnSnapToPivot_Click(this, EventArgs.Empty)),
+                BarButton("Snap to line", ConfirmSnapToLine),
                 BarButton("Nudge right  ›", () => btnAdjRight_Click(this, EventArgs.Empty)),
                 barUturn = BarButton("U-turn: off", () => btnAutoYouTurn_Click(this, EventArgs.Empty)),
                 barSteer = BarButton("Steer off", () => btnAutoSteer_Click(this, EventArgs.Empty)),

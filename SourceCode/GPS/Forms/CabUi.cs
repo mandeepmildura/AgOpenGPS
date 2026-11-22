@@ -334,13 +334,29 @@ namespace AgOpenGPS
                 markCount == 0 ? "" : "average · " + markWithin10 + " of " + markCount + " within " + CabSmall(0.1), true);
         }
 
+        // Snap drags the AB line across to the tractor. If the vehicle is 200 m off line
+        // (wrong row, GPS glitch, line not what the driver thought) one stray tap wrecks
+        // the pattern. Always ask first, showing how far and which way it will move.
+        private void ConfirmSnapToLine()
+        {
+            if (trk.idx < 0) return; // no line, snap is a no-op
+            double mm = double.IsNaN(avgPivDistance) ? 0 : avgPivDistance;
+            string dist = Math.Abs(mm) < 1000
+                ? Math.Abs(mm).ToString("N0", CultureInfo.InvariantCulture) + " mm"
+                : (Math.Abs(mm) * 0.001).ToString("N1", CultureInfo.InvariantCulture) + " m";
+            string side = mm > 0 ? "right" : "left";
+            if (AgOpenGPS.Forms.FormDialog.ShowQuestion("Snap to line",
+                    "Move the AB line " + dist + " to the " + side + ", onto the tractor?") == DialogResult.OK)
+                btnSnapToPivot_Click(this, EventArgs.Empty);
+        }
+
         private void PaintDock(Graphics g, CabIsland isl)
         {
             double snapCm = ToolSettings.Default.setAS_snapDistance;
             string step = CabSmall(snapCm * 0.01);
             float y = 12, h = 72;
             CabDraw.Tile(g, isl, new RectangleF(12, y, 180, h), "left", "Nudge left", step, () => CabDo(() => btnAdjLeft_Click(this, EventArgs.Empty)), 0, 20);
-            CabDraw.Tile(g, isl, new RectangleF(202, y, 180, h), "snap", "Snap to line", null, () => CabDo(() => btnSnapToPivot_Click(this, EventArgs.Empty)), 0, 20);
+            CabDraw.Tile(g, isl, new RectangleF(202, y, 180, h), "snap", "Snap to line", null, () => CabDo(ConfirmSnapToLine), 0, 20);
             CabDraw.Tile(g, isl, new RectangleF(392, y, 180, h), "right", "Nudge right", step, () => CabDo(() => btnAdjRight_Click(this, EventArgs.Empty)), 0, 20, false, true);
 
             var steer = new RectangleF(isl.Width - 12 - 300, y, 300, h);
