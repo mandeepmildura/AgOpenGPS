@@ -4607,7 +4607,7 @@ namespace AgOpenGPS
             // 
             this.hsbarFusion.LargeChange = 1;
             this.hsbarFusion.Location = new System.Drawing.Point(109, 233);
-            this.hsbarFusion.Maximum = 60;
+            this.hsbarFusion.Maximum = 95;
             this.hsbarFusion.Minimum = 5;
             this.hsbarFusion.Name = "hsbarFusion";
             this.hsbarFusion.Size = new System.Drawing.Size(235, 58);

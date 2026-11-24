@@ -44,7 +44,7 @@ namespace AgOpenGPS
             nudDualHeadingOffset.Value = (decimal)Properties.VehicleSettings.Default.setGPS_dualHeadingOffset;
             nudDualReverseDistance.Value = (decimal)Properties.VehicleSettings.Default.setGPS_dualReverseDetectionDistance;
 
-            hsbarFusion.Value = (int)(Properties.VehicleSettings.Default.setIMU_fusionWeight2 * 500);
+            hsbarFusion.Value = (int)(Properties.VehicleSettings.Default.setIMU_fusionWeight2 * 100);
             lblFusion.Text = (hsbarFusion.Value).ToString();
             lblFusionIMU.Text = (100 - hsbarFusion.Value).ToString();
 
@@ -107,8 +107,8 @@ namespace AgOpenGPS
 
         private void tabDHeading_Leave(object sender, EventArgs e)
         {
-            Properties.VehicleSettings.Default.setIMU_fusionWeight2 = (double)hsbarFusion.Value * 0.002;
-            mf.ahrs.fusionWeight = (double)hsbarFusion.Value * 0.002;
+            Properties.VehicleSettings.Default.setIMU_fusionWeight2 = (double)hsbarFusion.Value * 0.01;
+            mf.ahrs.fusionWeight = (double)hsbarFusion.Value * 0.01;
 
             Properties.Settings.Default.setGPS_isRTK = mf.isRTK_AlarmOn = cboxIsRTK.Checked;
 
