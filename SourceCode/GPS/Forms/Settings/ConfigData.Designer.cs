@@ -185,7 +185,7 @@ namespace AgOpenGPS
         // (e.g. 0.01 from the old 0.002 scale) can't throw when the antenna page opens.
         public static int FusionSliderPos(double weight, int min, int max)
         {
-            return Math.Max(min, Math.Min(max, (int)Math.Round(weight * 100)));
+            return Math.Max(min, Math.Min(max, (int)Math.Round(weight * 100, MidpointRounding.AwayFromZero)));
         }
 
         private void cboxIsAutoSwitchDualFixOn_CheckedChanged(object sender, EventArgs e)
