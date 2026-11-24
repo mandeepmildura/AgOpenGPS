@@ -44,7 +44,8 @@ namespace AgOpenGPS
             nudDualHeadingOffset.Value = (decimal)Properties.VehicleSettings.Default.setGPS_dualHeadingOffset;
             nudDualReverseDistance.Value = (decimal)Properties.VehicleSettings.Default.setGPS_dualReverseDetectionDistance;
 
-            hsbarFusion.Value = (int)(Properties.VehicleSettings.Default.setIMU_fusionWeight2 * 100);
+            hsbarFusion.Value = FusionSliderPos(Properties.VehicleSettings.Default.setIMU_fusionWeight2,
+                hsbarFusion.Minimum, hsbarFusion.Maximum);
             lblFusion.Text = (hsbarFusion.Value).ToString();
             lblFusionIMU.Text = (100 - hsbarFusion.Value).ToString();
 
@@ -177,7 +178,14 @@ namespace AgOpenGPS
             lblFusion.Text = (hsbarFusion.Value).ToString() + "%";
             lblFusionIMU.Text = (100 - hsbarFusion.Value).ToString() + "%";
 
-            mf.ahrs.fusionWeight = (double)hsbarFusion.Value * 0.002;
+            mf.ahrs.fusionWeight = (double)hsbarFusion.Value * 0.01;
+        }
+
+        // sandy: stored weight -> slider position (percent). Clamped so an out-of-range saved weight
+        // (e.g. 0.01 from the old 0.002 scale) can't throw when the antenna page opens.
+        public static int FusionSliderPos(double weight, int min, int max)
+        {
+            return Math.Max(min, Math.Min(max, (int)Math.Round(weight * 100)));
         }
 
         private void cboxIsAutoSwitchDualFixOn_CheckedChanged(object sender, EventArgs e)
